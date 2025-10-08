@@ -1,4 +1,3 @@
-// Variables globales pour stocker les données de l'application
 let utilisateurActuel = null;
 let utilisateurs = new Map();
 let utilisateursGlobaux = [];
@@ -30,14 +29,14 @@ const integrationGithub = {
 
 const tournois = {
     "tournoiHebdomadaire": {
-        "nom": "Défi Focus Hebdomadaire",
+        "nom": "Défi Focus Hebdomadaire", 
         "duree": "7 jours",
         "metrique": "temps_etude_total",
         "prix": ["500 points", "300 points", "200 points"]
     },
     "championnatMensuel": {
         "nom": "Maître de Concentration",
-        "duree": "30 jours",
+        "duree": "30 jours", 
         "metrique": "jours_serie",
         "categories": ["Débutant", "Avancé", "Expert"]
     }
@@ -45,7 +44,7 @@ const tournois = {
 
 const ligues = [
     {"nom": "Bronze", "pointsMin": 0, "couleur": "#CD7F32"},
-    {"nom": "Argent", "pointsMin": 1000, "couleur": "#C0C0C0"},
+    {"nom": "Argent", "pointsMin": 1000, "couleur": "#C0C0C0"}, 
     {"nom": "Or", "pointsMin": 2500, "couleur": "#FFD700"},
     {"nom": "Platine", "pointsMin": 5000, "couleur": "#E5E4E2"},
     {"nom": "Diamant", "pointsMin": 10000, "couleur": "#B9F2FF"}
@@ -66,7 +65,7 @@ const statistiquesAvancees = {
     "tempsPrevu": 1800,
     "distributionCategories": {
         "mathématiques": 40,
-        "programmation": 35,
+        "programmation": 35, 
         "langues": 20,
         "autre": 5
     }
@@ -113,11 +112,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initialiserApplication() {
-    // Initialiser les utilisateurs globaux (ИСПРАВЛЕНО: pays -> etudes)
+    // Initialiser les utilisateurs globaux
     utilisateursGlobaux = [
-        {"nomUtilisateur": "Admin", "points": 1250, "ligue": "Argent", etudes: "Info"},
+        { nomUtilisateur: "Admin", points: 1250, ligue: "Argent", etudes: "Info" },
     ];
-
+    
     // Initialiser les utilisateurs par défaut avec nouvelles statistiques
     utilisateurs.set('MaîtreÉtude', {
         nomUtilisateur: 'MaîtreÉtude',
@@ -137,22 +136,15 @@ function initialiserApplication() {
         tokenGithub: '',
         syncGithubActive: false,
         acceGithubDebloque: false, // Nouvel état pour l'accès GitHub
-        etudes: '', // ДОБАВЛЕНО: поле для etudes
-        photo: '', // ДОБАВЛЕНО: поле для фото
         parametres: {
             sonActive: true,
-            minuteurPersonnalise: {
-                tempsTravail: 45,
-                pauseCourte: 10,
-                pauseLongue: 20,
-                cycles: 3
-            }
+            minuteurPersonnalise: { tempsTravail: 45, pauseCourte: 10, pauseLongue: 20, cycles: 3 }
         }
     });
 
     // Lier les événements
     lierEvenements();
-
+    
     // Afficher l'écran de connexion
     afficherEcran('login-screen');
 }
@@ -296,7 +288,7 @@ function verifierAccesGitHub() {
 function verifierMotDePasseGitHub() {
     const motDePasse = document.getElementById('github-admin-password').value;
     const divErreur = document.getElementById('password-error');
-
+    
     if (motDePasse === motDePasseGitHub) {
         // Mot de passe correct
         utilisateurActuel.acceGithubDebloque = true;
@@ -325,7 +317,6 @@ function gererConnexion(e) {
         utilisateurActuel.derniereConnexion = new Date().toLocaleDateString('fr-FR');
         // Réinitialiser l'accès GitHub à chaque connexion
         utilisateurActuel.acceGithubDebloque = false;
-
         afficherEcran('main-screen');
         mettreAJourInterfaceUtilisateur();
         afficherNotification('Bienvenue, ' + nomUtilisateur + '!', 'success');
@@ -338,7 +329,7 @@ function gererInscription() {
     const nomUtilisateur = document.getElementById('username').value;
     const motDePasse = document.getElementById('password').value;
 
-    if (!nomUtilisateur || !motDePasse) {
+    if (!nomUtilisateur ||!motDePasse) {
         afficherNotification('Veuillez entrer un nom d\'utilisateur et un mot de passe', 'error');
         return;
     }
@@ -366,23 +357,14 @@ function gererInscription() {
         tokenGithub: '',
         syncGithubActive: false,
         acceGithubDebloque: false,
-        etudes: '', // ДОБАВЛЕНО: поле для etudes
-        photo: '', // ДОБАВЛЕНО: поле для фото
         parametres: {
             sonActive: true,
-            minuteurPersonnalise: {
-                tempsTravail: 45,
-                pauseCourte: 10,
-                pauseLongue: 20,
-                cycles: 3
-            }
+            minuteurPersonnalise: { tempsTravail: 45, pauseCourte: 10, pauseLongue: 20, cycles: 3 }
         }
     };
 
     utilisateurs.set(nomUtilisateur, nouvelUtilisateur);
-    // ИСПРАВЛЕНО: pays -> etudes
-    utilisateursGlobaux.push({nomUtilisateur: nomUtilisateur, points: 0, ligue: "Bronze", etudes: ""});
-
+    utilisateursGlobaux.push({ nomUtilisateur: nomUtilisateur, points: 0, ligue: "Bronze", etudes: "" });
     utilisateurActuel = nouvelUtilisateur;
     afficherEcran('main-screen');
     mettreAJourInterfaceUtilisateur();
@@ -408,7 +390,7 @@ function afficherOnglet(idOnglet) {
     const onglets = document.querySelectorAll('.tab-content');
     onglets.forEach(onglet => onglet.classList.remove('active'));
     document.getElementById(idOnglet + '-tab').classList.add('active');
-
+    
     if (idOnglet === 'statistics') {
         rendreStatistiquesAvancees();
     } else if (idOnglet === 'achievements') {
@@ -434,23 +416,23 @@ function mettreAJourNavigation(boutonActif) {
     boutonActif.classList.add('active');
 }
 
-// Fonctions du minuteur avec nouvelle logique de skip (ИСПРАВЛЕНО)
+// Fonctions du minuteur avec nouvelle logique de skip
 function demarrerMinuteur() {
     if (!minuteurEnCours) {
         minuteurEnCours = true;
         tempsDebut = Date.now(); // Marquer le temps de début
         mettreAJourControlesMinuteur();
-
+        
         intervalleMinuteur = setInterval(() => {
             tempsRestant--;
             mettreAJourAffichageMinuteur();
             mettreAJourBarreProgres();
-
+            
             if (tempsRestant <= 0) {
                 minuteurTermine();
             }
         }, 1000);
-
+        
         jouerSon('start');
     }
 }
@@ -472,9 +454,7 @@ function arreterMinuteur() {
     mettreAJourBarreProgres();
 }
 
-// ИСПРАВЛЕНО: функция passerMinuteur для правильного подсчета времени при skip
 function passerMinuteur() {
-    // Calculer les secondes réellement écoulées
     const secondesEcoulees = Math.max(0, tempsTotal - tempsRestant);
     const tempsEcouleMin = Math.floor(secondesEcoulees / 60);
 
@@ -486,19 +466,14 @@ function passerMinuteur() {
             verifierSucces();
         }
     }
-
-    // Arrêter le minuteur
     clearInterval(intervalleMinuteur);
     minuteurEnCours = false;
-
-    // Passer à la phase suivante sans créditer la session complète
     passerAPhasesuivante();
-
-    // Mettre à jour l'interface
     mettreAJourControlesMinuteur();
     mettreAJourAffichageMinuteur();
     mettreAJourBarreProgres();
 }
+
 
 function reinitialiserMinuteur() {
     const config = typesMinuteurs[typeMinuteurActuel];
@@ -513,21 +488,22 @@ function reinitialiserMinuteur() {
 function minuteurTermine() {
     clearInterval(intervalleMinuteur);
     minuteurEnCours = false;
+    
     jouerSon('complete');
-
+    
     if (phaseActuelle === 'work') {
         const tempsSession = Math.floor(tempsTotal / 60);
         ajouterSessionEtude(tempsSession);
         verifierSucces();
-
+        
         // Sauvegarde automatique GitHub si activée
         if (utilisateurActuel.syncGithubActive && utilisateurActuel.tokenGithub) {
             sauvegarderVersGitHub();
         }
-
+        
         afficherNotification(messagesInterface.sessionTerminee, 'success');
     }
-
+    
     passerAPhasesuivante();
     mettreAJourControlesMinuteur();
     mettreAJourAffichageMinuteur();
@@ -536,7 +512,7 @@ function minuteurTermine() {
 
 function passerAPhasesuivante() {
     const config = typesMinuteurs[typeMinuteurActuel];
-
+    
     if (phaseActuelle === 'work') {
         if (cycleActuel >= config.cycles) {
             phaseActuelle = 'longBreak';
@@ -556,22 +532,23 @@ function passerAPhasesuivante() {
         tempsRestant = config.tempsTravail * 60;
         tempsTotal = config.tempsTravail * 60;
         document.getElementById('timer-session').textContent = 'Travail';
-        if (phaseActuelle !== 'longBreak') {
+        if (phaseActuelle!== 'longBreak') {
             cycleActuel++;
         }
     }
+    
     tempsDebut = 0; // Réinitialiser pour la prochaine phase
 }
 
 function changerTypeMinuteur() {
     const selecteur = document.getElementById('timer-type');
     const nouveauType = selecteur.value;
-
+    
     if (nouveauType === 'custom') {
         afficherModal('custom-timer-modal');
         return;
     }
-
+    
     typeMinuteurActuel = nouveauType;
     arreterMinuteur();
     reinitialiserMinuteur();
@@ -585,6 +562,7 @@ function mettreAJourAffichageTypeMinuteur() {
         sprint: 'Sprint Rapide',
         custom: 'Personnalisé'
     };
+    
     document.getElementById('current-timer-type').textContent = nomsTypes[typeMinuteurActuel];
 }
 
@@ -603,7 +581,7 @@ function mettreAJourBarreProgres() {
 function mettreAJourControlesMinuteur() {
     const boutonDemarrer = document.getElementById('start-btn');
     const boutonPause = document.getElementById('pause-btn');
-
+    
     if (minuteurEnCours) {
         boutonDemarrer.classList.add('hidden');
         boutonPause.classList.remove('hidden');
@@ -616,33 +594,28 @@ function mettreAJourControlesMinuteur() {
 // Nouvelles fonctions des statistiques avec gestion des sessions interrompues
 function ajouterSessionEtude(minutes) {
     if (!utilisateurActuel) return;
-
+    
     utilisateurActuel.tempsEtudeTotale += minutes;
     utilisateurActuel.tempsPrevu += minutes;
     utilisateurActuel.sessionsCompletees++;
-
+    
     const aujourdhui = new Date().toDateString();
     if (!utilisateurActuel.statistiquesQuotidiennes[aujourdhui]) {
         utilisateurActuel.statistiquesQuotidiennes[aujourdhui] = 0;
     }
     utilisateurActuel.statistiquesQuotidiennes[aujourdhui] += minutes;
-
+    
     const points = minutes * 2;
     ajouterPoints(points);
+    
     calculerTauxCompletion();
     mettreAJourInterfaceUtilisateur();
 }
 
-// ИСПРАВЛЕНО: функция ajouterSessionEtudeInterrompue для корректного подсчета прерванных сессий
 function ajouterSessionEtudeInterrompue(minutes) {
     if (!utilisateurActuel) return;
-
-    // Ajouter uniquement le temps réel étudié
     utilisateurActuel.tempsEtudeTotale += minutes;
-
-    // NE PAS ajouter de temps prévu pour une session interrompue
-    // utilisateurActuel.tempsPrevu += ... (supprimé)
-
+    // Не добавляем tempsPrevu при прерывании сессии
     utilisateurActuel.sessionsInterrompues++;
 
     const aujourdhui = new Date().toDateString();
@@ -651,7 +624,6 @@ function ajouterSessionEtudeInterrompue(minutes) {
     }
     utilisateurActuel.statistiquesQuotidiennes[aujourdhui] += minutes;
 
-    // Points réduits pour les sessions interrompues
     const points = minutes * 1;
     ajouterPoints(points);
     calculerTauxCompletion();
@@ -660,7 +632,7 @@ function ajouterSessionEtudeInterrompue(minutes) {
 
 function calculerTauxCompletion() {
     if (!utilisateurActuel) return;
-
+    
     const totalSessions = utilisateurActuel.sessionsCompletees + utilisateurActuel.sessionsInterrompues;
     if (totalSessions > 0) {
         utilisateurActuel.tauxCompletion = Math.round((utilisateurActuel.sessionsCompletees / totalSessions) * 100);
@@ -669,16 +641,16 @@ function calculerTauxCompletion() {
 
 function ajouterPoints(points) {
     if (!utilisateurActuel) return;
-
+    
     utilisateurActuel.pointsTotaux += points;
-
+    
     // Mettre à jour le classement global
     const utilisateurGlobal = utilisateursGlobaux.find(u => u.nomUtilisateur === utilisateurActuel.nomUtilisateur);
     if (utilisateurGlobal) {
         utilisateurGlobal.points = utilisateurActuel.pointsTotaux;
         utilisateurGlobal.ligue = obtenirLigueUtilisateur(utilisateurActuel.pointsTotaux);
     }
-
+    
     const nouveauNiveau = Math.floor(utilisateurActuel.pointsTotaux / 100) + 1;
     if (nouveauNiveau > utilisateurActuel.niveau) {
         utilisateurActuel.niveau = nouveauNiveau;
@@ -697,39 +669,42 @@ function obtenirLigueUtilisateur(points) {
 
 function mettreAJourInterfaceUtilisateur() {
     if (!utilisateurActuel) return;
-
+    
     document.getElementById('current-username').textContent = utilisateurActuel.nomUtilisateur;
     document.getElementById('user-level').textContent = utilisateurActuel.niveau;
     document.getElementById('user-points').textContent = utilisateurActuel.pointsTotaux;
     document.getElementById('current-streak').textContent = utilisateurActuel.serieActuelle;
-    document.getElementById('sessions-completed').textContent = utilisateurActuel.sessionsCompletees;
+    document.getElementById('sessions-completes').textContent = utilisateurActuel.sessionsCompletees;
     document.getElementById('completion-rate').textContent = utilisateurActuel.tauxCompletion;
-
+    
     const aujourdhui = new Date().toDateString();
     const minutesAujourdhui = utilisateurActuel.statistiquesQuotidiennes[aujourdhui] || 0;
     document.getElementById('today-time').textContent = minutesAujourdhui;
-
+    
     // Mettre à jour les nouvelles statistiques
     const completeSessionsEl = document.getElementById('complete-sessions');
     const interruptedSessionsEl = document.getElementById('interrupted-sessions');
     const realTimeEl = document.getElementById('real-time');
     const plannedTimeEl = document.getElementById('planned-time');
-
+    
     if (completeSessionsEl) completeSessionsEl.textContent = utilisateurActuel.sessionsCompletees;
     if (interruptedSessionsEl) interruptedSessionsEl.textContent = utilisateurActuel.sessionsInterrompues;
     if (realTimeEl) realTimeEl.textContent = utilisateurActuel.tempsEtudeTotale;
     if (plannedTimeEl) plannedTimeEl.textContent = utilisateurActuel.tempsPrevu;
-
+    
     rendreSuccesRecents();
 }
 
 function rendreSuccesRecents() {
     const conteneur = document.getElementById('recent-achievements');
     if (!conteneur) return;
-
+    
     conteneur.innerHTML = '';
-    const succesDesbloques = succes.filter(s => utilisateurActuel.succes.includes(s.id)).slice(-3);
-
+    
+    const succesDesbloques = succes.filter(s => 
+        utilisateurActuel.succes.includes(s.id)
+    ).slice(-3);
+    
     succesDesbloques.forEach(succes => {
         const badge = document.createElement('div');
         badge.className = 'achievement-badge';
@@ -752,24 +727,25 @@ function rendreStatistiquesAvancees() {
 function rendreGraphiqueEfficaciteHebdomadaire() {
     const ctx = document.querySelector('#chart-week canvas');
     if (!ctx) return;
-
+    
     if (graphiques.graphiqueHebdomadaire) {
         graphiques.graphiqueHebdomadaire.destroy();
     }
-
+    
     const donneesHebdomadaires = [];
     const etiquettes = [];
     const aujourdhui = new Date();
-
+    
     for (let i = 6; i >= 0; i--) {
         const date = new Date(aujourdhui);
         date.setDate(date.getDate() - i);
         const dateStr = date.toDateString();
         const nomJour = date.toLocaleDateString('fr', { weekday: 'short' });
+        
         etiquettes.push(nomJour);
         donneesHebdomadaires.push(utilisateurActuel.statistiquesQuotidiennes[dateStr] || 0);
     }
-
+    
     graphiques.graphiqueHebdomadaire = new Chart(ctx, {
         type: 'line',
         data: {
@@ -788,25 +764,16 @@ function rendreGraphiqueEfficaciteHebdomadaire() {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    labels: {
-                        color: '#ffffff',
-                        font: { size: 10 }
-                    }
+                    labels: { color: '#ffffff', font: { size: 10 } }
                 }
             },
             scales: {
                 y: {
-                    ticks: {
-                        color: '#cccccc',
-                        font: { size: 10 }
-                    },
+                    ticks: { color: '#cccccc', font: { size: 10 } },
                     grid: { color: '#444444' }
                 },
                 x: {
-                    ticks: {
-                        color: '#cccccc',
-                        font: { size: 10 }
-                    },
+                    ticks: { color: '#cccccc', font: { size: 10 } },
                     grid: { color: '#444444' }
                 }
             }
@@ -817,14 +784,14 @@ function rendreGraphiqueEfficaciteHebdomadaire() {
 function rendreGraphiqueCompletion() {
     const ctx = document.querySelector('#chart-completion canvas');
     if (!ctx) return;
-
+    
     if (graphiques.graphiqueCompletion) {
         graphiques.graphiqueCompletion.destroy();
     }
-
+    
     const sessionsCompletes = utilisateurActuel.sessionsCompletees;
     const sessionsInterrompues = utilisateurActuel.sessionsInterrompues;
-
+    
     graphiques.graphiqueCompletion = new Chart(ctx, {
         type: 'doughnut',
         data: {
@@ -841,10 +808,7 @@ function rendreGraphiqueCompletion() {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    labels: {
-                        color: '#ffffff',
-                        font: { size: 10 }
-                    }
+                    labels: { color: '#ffffff', font: { size: 10 } }
                 }
             }
         }
@@ -854,11 +818,11 @@ function rendreGraphiqueCompletion() {
 function rendreGraphiqueCategories() {
     const ctx = document.querySelector('#chart-categories canvas');
     if (!ctx) return;
-
+    
     if (graphiques.graphiqueCategories) {
         graphiques.graphiqueCategories.destroy();
     }
-
+    
     graphiques.graphiqueCategories = new Chart(ctx, {
         type: 'doughnut',
         data: {
@@ -873,10 +837,7 @@ function rendreGraphiqueCategories() {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    labels: {
-                        color: '#ffffff',
-                        font: { size: 10 }
-                    }
+                    labels: { color: '#ffffff', font: { size: 10 } }
                 }
             }
         }
@@ -886,17 +847,17 @@ function rendreGraphiqueCategories() {
 function rendreGraphiqueCorrelation() {
     const ctx = document.querySelector('#chart-correlation canvas');
     if (!ctx) return;
-
+    
     if (graphiques.graphiqueCorrelation) {
         graphiques.graphiqueCorrelation.destroy();
     }
-
+    
     // Simulation des données de corrélation
     const donneesCorrelation = [
         { x: 10, y: 15 }, { x: 20, y: 25 }, { x: 30, y: 45 },
         { x: 40, y: 55 }, { x: 50, y: 65 }, { x: 60, y: 75 }
     ];
-
+    
     graphiques.graphiqueCorrelation = new Chart(ctx, {
         type: 'scatter',
         data: {
@@ -912,25 +873,16 @@ function rendreGraphiqueCorrelation() {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    labels: {
-                        color: '#ffffff',
-                        font: { size: 10 }
-                    }
+                    labels: { color: '#ffffff', font: { size: 10 } }
                 }
             },
             scales: {
                 y: {
-                    ticks: {
-                        color: '#cccccc',
-                        font: { size: 10 }
-                    },
+                    ticks: { color: '#cccccc', font: { size: 10 } },
                     grid: { color: '#444444' }
                 },
                 x: {
-                    ticks: {
-                        color: '#cccccc',
-                        font: { size: 10 }
-                    },
+                    ticks: { color: '#cccccc', font: { size: 10 } },
                     grid: { color: '#444444' }
                 }
             }
@@ -941,7 +893,7 @@ function rendreGraphiqueCorrelation() {
 // Fonctions des tournois
 function rendreTournois() {
     document.getElementById('weekly-t-name').textContent = tournois.tournoiHebdomadaire.nom;
-    document.getElementById('bracket-container').innerHTML = '<p>Les participants seront affichés après l\'inscription</p>';
+    document.getElementById('bracket-container').innerHTML = '<p>Les participants seront affichés après inscription</p>';
 }
 
 function inscrirePourTournoi() {
@@ -950,16 +902,16 @@ function inscrirePourTournoi() {
     document.getElementById('register-weekly').disabled = true;
 }
 
-// Fonctions des classements (ИСПРАВЛЕНО: pays -> etudes)
+// Fonctions des classements
 function rendreClassements() {
     const tbody = document.querySelector('#global-leaderboard tbody');
     if (!tbody) return;
-
+    
     tbody.innerHTML = '';
-
+    
     // Tri par points
     const utilisateursTries = [...utilisateursGlobaux].sort((a, b) => b.points - a.points);
-
+    
     utilisateursTries.forEach((utilisateur, index) => {
         const rangee = document.createElement('tr');
         rangee.innerHTML = `
@@ -975,13 +927,15 @@ function rendreClassements() {
 
 // Fonctions des amis
 function rendreAmis() {
-    const listeAmis = document.getElementById('friends-list-container');
+    const listeAmis = document.getElementById('friends-list');
     const serieGroupe = document.getElementById('group-streak');
-
-    if (!listeAmis) return;
-
+    
+    if (!utilisateurActuel ||!listeAmis) return;
+    
+    listeAmis.innerHTML = '<h4>Mes amis :</h4>';
+    
     if (utilisateurActuel.amis.length === 0) {
-        listeAmis.innerHTML = '<p>Vous n\'avez pas encore d\'amis. Ajoutez des amis pour étudier ensemble!</p>';
+        listeAmis.innerHTML += '<p>Vous n\'avez pas encore d\'amis. Ajoutez des amis pour étudier ensemble!</p>';
     } else {
         utilisateurActuel.amis.forEach(nomAmi => {
             const divAmi = document.createElement('div');
@@ -990,38 +944,39 @@ function rendreAmis() {
             listeAmis.appendChild(divAmi);
         });
     }
-
+    
     if (serieGroupe) {
-        serieGroupe.innerHTML = '<p>Vous et vos amis étudiez ensemble depuis 3 jours consécutifs!</p>';
+        serieGroupe.innerHTML = '<h4>Série de groupe : 3 jours</h4><p>Vous et vos amis étudiez ensemble depuis 3 jours consécutifs!</p>';
     }
 }
 
 function ajouterAmi(e) {
     e.preventDefault();
     const nomUtilisateurAmi = document.getElementById('friend-username').value.trim();
-
+    
     if (!nomUtilisateurAmi) {
         afficherNotification('Veuillez entrer un nom d\'utilisateur', 'error');
         return;
     }
-
+    
     if (nomUtilisateurAmi === utilisateurActuel.nomUtilisateur) {
         afficherNotification('Vous ne pouvez pas vous ajouter vous-même comme ami', 'error');
         return;
     }
-
+    
     if (utilisateurActuel.amis.includes(nomUtilisateurAmi)) {
         afficherNotification('Cet utilisateur est déjà dans vos amis', 'error');
         return;
     }
-
+    
     // Vérifier l'existence de l'utilisateur dans la base globale
     const amiExiste = utilisateursGlobaux.some(u => u.nomUtilisateur === nomUtilisateurAmi);
+    
     if (!amiExiste) {
         afficherNotification('Utilisateur introuvable', 'error');
         return;
     }
-
+    
     utilisateurActuel.amis.push(nomUtilisateurAmi);
     document.getElementById('friend-username').value = '';
     rendreAmis();
@@ -1034,22 +989,22 @@ function rendreSyncGitHub() {
     const contenuVerrouille = document.getElementById('github-locked-content');
     const contenuDebloque = document.getElementById('github-unlocked-content');
     const divStatut = document.getElementById('github-status');
-
+    
     if (!utilisateurActuel) return;
-
+    
     if (utilisateurActuel.acceGithubDebloque) {
         // Afficher le contenu débloqué
         contenuVerrouille.style.display = 'none';
         contenuDebloque.classList.remove('hidden');
-
+        
         if (divStatut) {
             if (utilisateurActuel.syncGithubActive) {
-                divStatut.innerHTML = '✅ Synchronisation active';
+                divStatut.innerHTML = '<p style="color: var(--y2k-primary);">✅ Synchronisation active</p>';
             } else {
-                divStatut.innerHTML = '❌ Synchronisation non configurée';
+                divStatut.innerHTML = '<p style="color: var(--y2k-text-secondary);">❌ Synchronisation non configurée</p>';
             }
         }
-
+        
         // Charger les paramètres
         document.getElementById('auto-backup').checked = true;
         document.getElementById('public-profile').checked = false;
@@ -1067,11 +1022,11 @@ function testerTokenGitHub() {
         afficherNotification('Veuillez entrer un token GitHub', 'error');
         return;
     }
-
+    
     // Simulation de vérification du token
     setTimeout(() => {
         afficherNotification('Token vérifié avec succès!', 'success');
-        document.getElementById('github-status').innerHTML = '✅ Token valide';
+        document.getElementById('github-status').innerHTML = '<p style="color: var(--y2k-primary);">✅ Token valide</p>';
     }, 1000);
 }
 
@@ -1081,28 +1036,28 @@ function demarrerSyncGitHub() {
         afficherNotification('Veuillez d\'abord entrer et vérifier le token', 'error');
         return;
     }
-
+    
     utilisateurActuel.tokenGithub = token;
     utilisateurActuel.syncGithubActive = true;
-
+    
     // Débloquer le succès
     if (!utilisateurActuel.succes.includes('sync_github')) {
         utilisateurActuel.succes.push('sync_github');
         ajouterPoints(100);
         afficherNotification('Succès débloqué : Gardien du Cloud!', 'success');
     }
-
+    
     sauvegarderVersGitHub();
     rendreSyncGitHub();
 }
 
 function sauvegarderVersGitHub() {
     if (!utilisateurActuel.syncGithubActive) return;
-
+    
     // Simulation de sauvegarde
     setTimeout(() => {
         afficherNotification('Données sauvegardées sur GitHub!', 'success');
-        document.getElementById('github-status').innerHTML = '✅ Dernière sauvegarde : ' + new Date().toLocaleTimeString('fr-FR');
+        document.getElementById('github-status').innerHTML = '<p style="color: var(--y2k-primary);">✅ Dernière sauvegarde : ' + new Date().toLocaleTimeString('fr-FR') + '</p>';
     }, 1500);
 }
 
@@ -1111,7 +1066,7 @@ function restaurerDepuisGitHub() {
         afficherNotification('Veuillez d\'abord configurer le token GitHub', 'error');
         return;
     }
-
+    
     // Simulation de restauration
     setTimeout(() => {
         afficherNotification('Données restaurées depuis GitHub!', 'success');
@@ -1123,13 +1078,9 @@ function mettreAJourParametresGitHub() {
     const sauvegardeAuto = document.getElementById('auto-backup').checked;
     const profilPublic = document.getElementById('public-profile').checked;
     const partagerStatistiques = document.getElementById('share-statistics').checked;
-
+    
     if (utilisateurActuel) {
-        utilisateurActuel.parametresGithub = {
-            sauvegardeAuto,
-            profilPublic,
-            partagerStatistiques
-        };
+        utilisateurActuel.parametresGithub = { sauvegardeAuto, profilPublic, partagerStatistiques };
     }
 }
 
@@ -1137,233 +1088,225 @@ function mettreAJourParametresGitHub() {
 function rendreSucces() {
     const grille = document.getElementById('achievements-grid');
     if (!grille) return;
-
+    
     grille.innerHTML = '';
-
+    
     succes.forEach(succes => {
         const carte = document.createElement('div');
         const estDebloque = utilisateurActuel.succes.includes(succes.id);
-        carte.className = `achievement-card ${estDebloque ? 'unlocked' : 'locked'}`;
+        
+        carte.className = `achievement-card ${estDebloque? 'unlocked' : 'locked'}`;
         carte.innerHTML = `
-            <div class="achievement-icon">${succes.icone}</div>
-            <div class="achievement-info">
-                <h4>${succes.nom}</h4>
-                <p>${succes.description}</p>
-                <span class="achievement-points">${succes.points} points</span>
-            </div>
+            <div class="achievement-card-icon">${succes.icone}</div>
+            <div class="achievement-card-name">${succes.nom}</div>
+            <div class="achievement-card-description">${succes.description}</div>
+            <div class="achievement-card-points">+${succes.points} points</div>
         `;
+        
         grille.appendChild(carte);
     });
 }
 
 function verifierSucces() {
     if (!utilisateurActuel) return;
-
-    // Premier minuteur
-    if (!utilisateurActuel.succes.includes('premier_minuteur') && utilisateurActuel.sessionsCompletees >= 1) {
-        debloquerSucces('premier_minuteur');
-    }
-
-    // Série de 5
-    if (!utilisateurActuel.succes.includes('serie_5') && utilisateurActuel.serieActuelle >= 5) {
-        debloquerSucces('serie_5');
-    }
-
-    // Maître focus
-    if (!utilisateurActuel.succes.includes('maitre_focus') && utilisateurActuel.sessionsCompletees >= 50) {
-        debloquerSucces('maitre_focus');
-    }
-
-    // Marathon
-    const aujourdhui = new Date().toDateString();
-    const minutesAujourdhui = utilisateurActuel.statistiquesQuotidiennes[aujourdhui] || 0;
-    if (!utilisateurActuel.succes.includes('marathon') && minutesAujourdhui >= 240) {
-        debloquerSucces('marathon');
-    }
-
-    // Papillon social
-    if (!utilisateurActuel.succes.includes('papillon_social') && utilisateurActuel.amis.length >= 5) {
-        debloquerSucces('papillon_social');
-    }
-
-    // Vérification des heures pour oiseau de nuit et lève-tôt
-    const heureActuelle = new Date().getHours();
-    if (!utilisateurActuel.succes.includes('oiseau_nuit') && heureActuelle >= 22) {
-        debloquerSucces('oiseau_nuit');
-    }
-    if (!utilisateurActuel.succes.includes('leve_tot') && heureActuelle < 7) {
-        debloquerSucces('leve_tot');
-    }
-}
-
-function debloquerSucces(idSucces) {
-    if (utilisateurActuel.succes.includes(idSucces)) return;
-
-    const succes = succes.find(s => s.id === idSucces);
-    if (!succes) return;
-
-    utilisateurActuel.succes.push(idSucces);
-    ajouterPoints(succes.points);
-    afficherNotification(`${messagesInterface.nouveauSucces} ${succes.nom}`, 'success');
+    
+    succes.forEach(succes => {
+        if (utilisateurActuel.succes.includes(succes.id)) return;
+        
+        let debloque = false;
+        
+        switch (succes.id) {
+            case 'premier_minuteur':
+                if (utilisateurActuel.sessionsCompletees >= 1) debloque = true;
+                break;
+            case 'maitre_focus':
+                if (utilisateurActuel.sessionsCompletees >= 50) debloque = true;
+                break;
+            case 'oiseau_nuit':
+                const heure = new Date().getHours();
+                if (heure >= 22 || heure < 6) debloque = true;
+                break;
+            case 'leve_tot':
+                const heureMatin = new Date().getHours();
+                if (heureMatin < 7) debloque = true;
+                break;
+            case 'marathon':
+                const aujourdhui = new Date().toDateString();
+                const minutesAujourdhui = utilisateurActuel.statistiquesQuotidiennes[aujourdhui] || 0;
+                if (minutesAujourdhui >= 240) debloque = true;
+                break;
+            case 'papillon_social':
+                if (utilisateurActuel.amis.length >= 5) debloque = true;
+                break;
+        }
+        
+        if (debloque) {
+            utilisateurActuel.succes.push(succes.id);
+            ajouterPoints(succes.points);
+            afficherNotification(`Succès débloqué : ${succes.nom}!`, 'success');
+            jouerSon('achievement');
+        }
+    });
 }
 
 // Fonctions des paramètres
-function mettreAJourInterfaceParametres() {
-    if (!utilisateurActuel) return;
-
-    document.getElementById('sound-enabled').checked = utilisateurActuel.parametres.sonActive;
-    document.getElementById('custom-work').value = utilisateurActuel.parametres.minuteurPersonnalise.tempsTravail;
-    document.getElementById('custom-short-break').value = utilisateurActuel.parametres.minuteurPersonnalise.pauseCourte;
-    document.getElementById('custom-long-break').value = utilisateurActuel.parametres.minuteurPersonnalise.pauseLongue;
+function mettreAJourMinuteurPersonnalise() {
+    const travail = parseInt(document.getElementById('custom-work').value);
+    const pauseCourte = parseInt(document.getElementById('custom-short-break').value);
+    const pauseLongue = parseInt(document.getElementById('custom-long-break').value);
+    
+    if (utilisateurActuel) {
+        utilisateurActuel.parametres.minuteurPersonnalise = {
+            tempsTravail: travail,
+            pauseCourte: pauseCourte,
+            pauseLongue: pauseLongue,
+            cycles: 3
+        };
+        
+        typesMinuteurs.custom = utilisateurActuel.parametres.minuteurPersonnalise;
+    }
 }
 
 function mettreAJourParametresSon() {
-    if (!utilisateurActuel) return;
-    utilisateurActuel.parametres.sonActive = document.getElementById('sound-enabled').checked;
+    const active = document.getElementById('sound-enabled').checked;
+    if (utilisateurActuel) {
+        utilisateurActuel.parametres.sonActive = active;
+    }
 }
 
-function mettreAJourMinuteurPersonnalise() {
+function mettreAJourInterfaceParametres() {
     if (!utilisateurActuel) return;
-
-    utilisateurActuel.parametres.minuteurPersonnalise.tempsTravail = parseInt(document.getElementById('custom-work').value);
-    utilisateurActuel.parametres.minuteurPersonnalise.pauseCourte = parseInt(document.getElementById('custom-short-break').value);
-    utilisateurActuel.parametres.minuteurPersonnalise.pauseLongue = parseInt(document.getElementById('custom-long-break').value);
-
-    // Mettre à jour la configuration
-    typesMinuteurs.custom = {
-        tempsTravail: utilisateurActuel.parametres.minuteurPersonnalise.tempsTravail,
-        pauseCourte: utilisateurActuel.parametres.minuteurPersonnalise.pauseCourte,
-        pauseLongue: utilisateurActuel.parametres.minuteurPersonnalise.pauseLongue,
-        cycles: 3
-    };
+    
+    document.getElementById('custom-work').value = utilisateurActuel.parametres.minuteurPersonnalise.tempsTravail;
+    document.getElementById('custom-short-break').value = utilisateurActuel.parametres.minuteurPersonnalise.pauseCourte;
+    document.getElementById('custom-long-break').value = utilisateurActuel.parametres.minuteurPersonnalise.pauseLongue;
+    document.getElementById('sound-enabled').checked = utilisateurActuel.parametres.sonActive;
 }
 
 function sauvegarderParametresMinuteurPersonnalise() {
-    const tempsTravail = parseInt(document.getElementById('modal-work-time').value);
+    const travail = parseInt(document.getElementById('modal-work-time').value);
     const pauseCourte = parseInt(document.getElementById('modal-short-break').value);
     const pauseLongue = parseInt(document.getElementById('modal-long-break').value);
     const cycles = parseInt(document.getElementById('modal-cycles').value);
-
-    typesMinuteurs.custom = { tempsTravail, pauseCourte, pauseLongue, cycles };
-    typeMinuteurActuel = 'custom';
-
+    
+    typesMinuteurs.custom = { tempsTravail: travail, pauseCourte: pauseCourte, pauseLongue: pauseLongue, cycles: cycles };
+    
     if (utilisateurActuel) {
-        utilisateurActuel.parametres.minuteurPersonnalise = { tempsTravail, pauseCourte, pauseLongue, cycles };
+        utilisateurActuel.parametres.minuteurPersonnalise = typesMinuteurs.custom;
     }
-
+    
+    typeMinuteurActuel = 'custom';
     arreterMinuteur();
     reinitialiserMinuteur();
     mettreAJourAffichageTypeMinuteur();
     masquerModal('custom-timer-modal');
-    afficherNotification('Minuteur personnalisé sauvegardé!', 'success');
+    
+    afficherNotification('Paramètres du minuteur sauvegardés!', 'success');
 }
 
-// ИСПРАВЛЕНО: функция mettreAJourInterfaceProfil с поддержкой etudes и photo
+// Fonctions du profil
 function mettreAJourInterfaceProfil() {
     if (!utilisateurActuel) return;
-
     document.getElementById('profile-username').textContent = utilisateurActuel.nomUtilisateur;
     document.getElementById('profile-level').textContent = utilisateurActuel.niveau;
     document.getElementById('profile-points').textContent = utilisateurActuel.pointsTotaux;
     document.getElementById('last-login').textContent = utilisateurActuel.derniereConnexion;
 
-    // Заполнить поле etudes
     const etudesInput = document.getElementById('profile-etudes');
-    if (etudesInput) {
-        etudesInput.value = utilisateurActuel.etudes || '';
-    }
+    if (etudesInput) etudesInput.value = utilisateurActuel.etudes || '';
 
-    // Заполнить фото пользователя
     const userPhoto = document.getElementById('user-photo');
-    if (userPhoto) {
-        userPhoto.src = utilisateurActuel.photo || 'default.png';
-    }
+    if (userPhoto) userPhoto.src = utilisateurActuel.photo || 'default.png';
 }
 
-// Fonctions du profil - Export/Import
 function exporterDonneesUtilisateur() {
     if (!utilisateurActuel) return;
-
+    
     const donnees = JSON.stringify(utilisateurActuel, null, 2);
     const blob = new Blob([donnees], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-
-    const lien = document.createElement('a');
-    lien.href = url;
-    lien.download = `studytime-${utilisateurActuel.nomUtilisateur}-${new Date().toISOString().split('T')[0]}.json`;
-    lien.click();
-
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `studytime_${utilisateurActuel.nomUtilisateur}_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    afficherNotification('Données exportées avec succès!', 'success');
+    
+    afficherNotification('Données exportées!', 'success');
 }
 
-function importerDonneesUtilisateur(e) {
-    const fichier = e.target.files[0];
+function importerDonneesUtilisateur(event) {
+    const fichier = event.target.files[0];
     if (!fichier) return;
-
+    
     const lecteur = new FileReader();
-    lecteur.onload = function(event) {
+    lecteur.onload = function(e) {
         try {
-            const donneesImportees = JSON.parse(event.target.result);
+            const donneesUtilisateur = JSON.parse(e.target.result);
             
-            // Validation de base des données
-            if (donneesImportees.nomUtilisateur && donneesImportees.pointsTotaux !== undefined) {
-                Object.assign(utilisateurActuel, donneesImportees);
-                mettreAJourInterfaceUtilisateur();
-                mettreAJourInterfaceProfil();
-                afficherNotification('Données importées avec succès!', 'success');
-            } else {
+            if (!donneesUtilisateur.nomUtilisateur || donneesUtilisateur.pointsTotaux === undefined) {
                 throw new Error('Format de fichier invalide');
             }
-        } catch (error) {
-            afficherNotification('Erreur lors de l\'importation du fichier', 'error');
+            
+            Object.assign(utilisateurActuel, donneesUtilisateur);
+            utilisateurs.set(utilisateurActuel.nomUtilisateur, utilisateurActuel);
+            
+            mettreAJourInterfaceUtilisateur();
+            afficherNotification('Données importées avec succès!', 'success');
+        } catch (erreur) {
+            afficherNotification('Erreur lors de l\'import des données : ' + erreur.message, 'error');
         }
     };
     lecteur.readAsText(fichier);
 }
 
-// Fonctions utilitaires
+// Utilitaires
 function afficherModal(idModal) {
     document.getElementById(idModal).classList.remove('hidden');
+    // Focus sur le premier input si c'est la modal de mot de passe
+    if (idModal === 'github-password-modal') {
+        setTimeout(() => {
+            document.getElementById('github-admin-password').focus();
+        }, 100);
+    }
 }
 
 function masquerModal(idModal) {
     document.getElementById(idModal).classList.add('hidden');
+    // Nettoyer les erreurs si c'est la modal de mot de passe
+    if (idModal === 'github-password-modal') {
+        document.getElementById('password-error').classList.add('hidden');
+        document.getElementById('github-admin-password').value = '';
+    }
 }
 
 function afficherNotification(message, type = 'info') {
-    const conteneur = document.getElementById('notifications-container');
-    if (!conteneur) return;
-
     const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
+    notification.className = `notification notification-${type}`;
     notification.style.cssText = `
-        padding: 12px 16px;
-        margin: 8px;
-        border-radius: 4px;
-        color: white;
-        font-size: 12px;
-        opacity: 0;
-        transform: translateY(-20px);
-        transition: all 0.3s ease;
-        ${type === 'success' ? 'background: #4CAF50;' : ''}
-        ${type === 'error' ? 'background: #f44336;' : ''}
-        ${type === 'info' ? 'background: #2196F3;' : ''}
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--y2k-${type === 'error'? 'primary' : 'secondary'});
+        color: var(--y2k-text);
+        padding: var(--space-12) var(--space-16);
+        border-radius: var(--radius-base);
+        border: 2px solid var(--y2k-border);
+        font-family: var(--font-family-pixel);
+        font-size: var(--font-size-xs);
+        z-index: 2000;
+        max-width: 300px;
+        box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+        animation: slideIn 0.3s ease-out;
     `;
-
-    conteneur.appendChild(notification);
-
-    // Animation d'entrée
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
     setTimeout(() => {
-        notification.style.opacity = '1';
-        notification.style.transform = 'translateY(0)';
-    }, 10);
-
-    // Suppression automatique
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateY(-20px)';
+        notification.style.animation = 'slideOut 0.3s ease-in forwards';
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.parentNode.removeChild(notification);
@@ -1373,27 +1316,96 @@ function afficherNotification(message, type = 'info') {
 }
 
 function jouerSon(type) {
-    if (!utilisateurActuel || !utilisateurActuel.parametres.sonActive) return;
-
-    const audio = document.getElementById(`sound-${type}`);
-    if (audio) {
-        audio.currentTime = 0;
-        audio.play().catch(e => console.warn('Cannot play sound:', e));
+    if (!utilisateurActuel ||!utilisateurActuel.parametres.sonActive) return;
+    
+    const contexteAudio = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillateur = contexteAudio.createOscillator();
+    const noeudGain = contexteAudio.createGain();
+    
+    oscillateur.connect(noeudGain);
+    noeudGain.connect(contexteAudio.destination);
+    
+    switch (type) {
+        case 'start':
+            oscillateur.frequency.setValueAtTime(800, contexteAudio.currentTime);
+            oscillateur.frequency.setValueAtTime(1000, contexteAudio.currentTime + 0.1);
+            noeudGain.gain.setValueAtTime(0.1, contexteAudio.currentTime);
+            noeudGain.gain.exponentialRampToValueAtTime(0.01, contexteAudio.currentTime + 0.2);
+            break;
+        case 'complete':
+            for (let i = 0; i < 3; i++) {
+                const osc = contexteAudio.createOscillator();
+                const gain = contexteAudio.createGain();
+                osc.connect(gain);
+                gain.connect(contexteAudio.destination);
+                
+                osc.frequency.setValueAtTime(600 + i * 200, contexteAudio.currentTime + i * 0.15);
+                gain.gain.setValueAtTime(0.1, contexteAudio.currentTime + i * 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.01, contexteAudio.currentTime + i * 0.15 + 0.3);
+                
+                osc.start(contexteAudio.currentTime + i * 0.15);
+                osc.stop(contexteAudio.currentTime + i * 0.15 + 0.3);
+            }
+            return;
+        case 'error':
+            oscillateur.frequency.setValueAtTime(300, contexteAudio.currentTime);
+            oscillateur.frequency.setValueAtTime(200, contexteAudio.currentTime + 0.1);
+            noeudGain.gain.setValueAtTime(0.1, contexteAudio.currentTime);
+            noeudGain.gain.exponentialRampToValueAtTime(0.01, contexteAudio.currentTime + 0.3);
+            break;
+        case 'achievement':
+            const frequences = [523, 659, 784, 1047];
+            frequences.forEach((freq, i) => {
+                const osc = contexteAudio.createOscillator();
+                const gain = contexteAudio.createGain();
+                osc.connect(gain);
+                gain.connect(contexteAudio.destination);
+                
+                osc.frequency.setValueAtTime(freq, contexteAudio.currentTime + i * 0.1);
+                gain.gain.setValueAtTime(0.1, contexteAudio.currentTime + i * 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, contexteAudio.currentTime + i * 0.1 + 0.4);
+                
+                osc.start(contexteAudio.currentTime + i * 0.1);
+                osc.stop(contexteAudio.currentTime + i * 0.1 + 0.4);
+            });
+            return;
     }
+    
+    oscillateur.start(contexteAudio.currentTime);
+    oscillateur.stop(contexteAudio.currentTime + 0.2);
 }
 
-// Fonctions d'ajout photo et gestion des GitHub Gists
-function sauvegarderPhotoProfilDansGist(nomUtilisateur, photoBase64, token) {
-    // Simulation de sauvegarde dans GitHub Gist
-    console.log('Sauvegarde de la photo dans GitHub Gist pour', nomUtilisateur);
-}
+// Styles pour l'animation des notifications
+const stylesNotifications = document.createElement('style');
+stylesNotifications.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
 
-// Gestionnaires d'événements pour les fonctionnalités etudes et photo
-// ИСПРАВЛЕНО: переместили обработчики в конец и добавили задержку
+document.head.appendChild(stylesNotifications);
+
+// Handlers for etudes and photo in profile
 document.addEventListener('DOMContentLoaded', function() {
-    // Задержка для полной загрузки DOM
     setTimeout(() => {
-        // Обработчик Enter для поля etudes
         const etudesInput = document.getElementById('profile-etudes');
         if (etudesInput) {
             etudesInput.addEventListener('keydown', function(e) {
@@ -1407,7 +1419,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Обработчик загрузки фото
         const photoInput = document.getElementById('photo-upload');
         if (photoInput) {
             photoInput.addEventListener('change', function(e) {
@@ -1416,30 +1427,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     const reader = new FileReader();
                     reader.onload = function(ev) {
                         const userPhoto = document.getElementById('user-photo');
-                        if (userPhoto) {
-                            userPhoto.src = ev.target.result;
-                        }
-
-                        // Сохраняем фото в профиль (base64)
-                        if (utilisateurActuel) {
-                            utilisateurActuel.photo = ev.target.result;
-
-                            // Сохраняем фото в localStorage
-                            try {
-                                localStorage.setItem('userPhoto_' + utilisateurActuel.nomUtilisateur, ev.target.result);
-                            } catch (e) {
-                                console.warn('Ошибка сохранения фото в localStorage:', e);
-                            }
-
-                            // Сохраняем фото в gist через GitHub API
-                            if (utilisateurActuel.syncGithubActive && utilisateurActuel.tokenGithub) {
-                                sauvegarderPhotoProfilDansGist(utilisateurActuel.nomUtilisateur, ev.target.result, utilisateurActuel.tokenGithub);
-                            }
-                        }
+                        if (userPhoto) userPhoto.src = ev.target.result;
+                        if (utilisateurActuel) utilisateurActuel.photo = ev.target.result;
                     };
                     reader.readAsDataURL(file);
                 }
             });
         }
-    }, 1000); // Задержка 1 секунда для полной загрузки
+    }, 1000);
 });
+
+
