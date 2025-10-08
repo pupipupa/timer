@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyTime Y2K - Assistant Pixellisé pour Étudier</title>
+    <title>StudyTime - assistant pour étudier</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <!-- Chart.js pour les statistiques -->
@@ -16,26 +16,26 @@
     <div id="login-screen" class="screen active">
         <div class="window login-window">
             <div class="window-header">
-                <span class="window-title">💾 StudyTime Y2K</span>
+                <span class="window-title">💾 StudyTime</span>
                 <button class="window-btn close-btn">✕</button>
             </div>
             <div class="window-content">
                 <div class="pixel-logo">
                     <div class="logo-heart">💖</div>
                     <h1>StudyTime</h1>
-                    <p class="subtitle">Assistant pixellisé pour étudier</p>
+                    <p class="subtitle">assistant pour étudier</p>
                 </div>
                 <form id="login-form" class="auth-form">
                     <div class="form-group">
-                        <label for="username">Nom d'utilisateur :</label>
+                        <label for="username">Nom d'utilisateur:</label>
                         <input type="text" id="username" class="pixel-input" placeholder="Entrez votre nom..." required>
                     </div>
                     <div class="form-group">
-                        <label for="password">Mot de passe :</label>
+                        <label for="password">Mot de passe:</label>
                         <input type="password" id="password" class="pixel-input" placeholder="••••••••" required>
                     </div>
-                    <button type="submit" class="pixel-btn primary-btn">🚀 Se connecter</button>
-                    <button type="button" id="signup-btn" class="pixel-btn secondary-btn">✨ S'inscrire</button>
+                    <button type="submit" class="pixel-btn primary-btn">log in</button>
+                    <button type="button" id="signup-btn" class="pixel-btn secondary-btn">sign up </button>
                 </form>
             </div>
         </div>
@@ -48,7 +48,7 @@
             <div class="user-info">
                 <div class="user-avatar">👤</div>
                 <div class="user-details">
-                    <span id="current-username">MaîtreÉtude</span>
+                    <span id="current-username">Admin</span>
                     <div class="level-info">
                         <span class="level">Niveau <span id="user-level">5</span></span>
                         <span class="points">⭐ <span id="user-points">1250</span></span>
@@ -175,7 +175,7 @@
                                 <div class="chart-container" id="chart-week" style="height:280px;position:relative"><canvas></canvas></div>
                             </div>
                             <div class="analytics-block">
-                                <h3>📊 Sessions : Complètes vs Interrompues</h3>
+                                <h3>📊 Sessions: Complètes vs Interrompues</h3>
                                 <div class="chart-container" id="chart-completion" style="height:280px;position:relative"><canvas></canvas></div>
                                 <div class="completion-stats">
                                     <p><span class="stat-highlight" id="complete-sessions">18</span> sessions complètes</p>
@@ -205,9 +205,9 @@
                     <div class="window-content">
                         <div class="tournament-sections">
                             <div class="tournament-info">
-                                <h3>Tournoi Actuel : <span id="weekly-t-name">Défi Focus Hebdomadaire</span></h3>
-                                <p>Catégories : <span>Débutant, Avancé, Expert</span></p>
-                                <p>Prix : <span>500, 300, 200 points</span></p>
+                                <h3>Tournoi Actuel: <span id="weekly-t-name">Défi Focus Hebdomadaire</span></h3>
+                                <p>Catégories: <span>Débutant, Avancé, Expert</span></p>
+                                <p>Prix: <span>500, 300, 200 points</span></p>
                                 <button id="register-weekly" class="pixel-btn primary-btn">Participer</button>
                             </div>
                             <div class="tournament-bracket">
@@ -235,7 +235,7 @@
                                         <th>Nom</th>
                                         <th>Points</th>
                                         <th>Ligue</th>
-                                        <th>Pays</th>
+                                        <th>Etudes</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -277,7 +277,7 @@
                         <div id="github-unlocked-content" class="github-unlocked hidden">
                             <form id="github-sync-form" class="github-sync-form">
                                 <div class="form-group">
-                                    <label for="github-token">Token d'Accès Personnel GitHub :</label>
+                                    <label for="github-token">Token d'Accès Personnel GitHub:</label>
                                     <input type="password" id="github-token" class="pixel-input" placeholder="Token GitHub..." required>
                                 </div>
                                 <button type="button" id="test-github-token" class="pixel-btn secondary-btn">Tester le token</button>
@@ -326,15 +326,15 @@
                                 <h3>⏰ Minuteur personnalisé</h3>
                                 <div class="custom-timer-settings">
                                     <div class="setting-row">
-                                        <label>Temps de travail (min) :</label>
+                                        <label>Temps de travail (min):</label>
                                         <input type="number" id="custom-work" class="pixel-input" value="45" min="1" max="180">
                                     </div>
                                     <div class="setting-row">
-                                        <label>Pause courte (min) :</label>
+                                        <label>Pause courte (min):</label>
                                         <input type="number" id="custom-short-break" class="pixel-input" value="10" min="1" max="30">
                                     </div>
                                     <div class="setting-row">
-                                        <label>Pause longue (min) :</label>
+                                        <label>Pause longue (min):</label>
                                         <input type="number" id="custom-long-break" class="pixel-input" value="20" min="1" max="60">
                                     </div>
                                 </div>
@@ -356,7 +356,7 @@
                                 <div class="profile-details">
                                     <h2 id="profile-username">MaîtreÉtude</h2>
                                     <p>Niveau <span id="profile-level">5</span> • <span id="profile-points">1250</span> points</p>
-                                    <p class="join-date">Dernière connexion : <span id="last-login">aujourd'hui</span></p>
+                                    <p class="join-date">Dernière connexion: <span id="last-login">aujourd'hui</span></p>
                                 </div>
                             </div>
                             <div class="data-management">
@@ -385,7 +385,7 @@
             <div class="window-content">
                 <div class="password-form">
                     <div class="lock-icon">🔐</div>
-                    <p class="password-message">Mot de passe d'administration :</p>
+                    <p class="password-message">Mot de passe d'administration:</p>
                     <input type="password" id="github-admin-password" class="pixel-input password-input" placeholder="Entrez le mot de passe...">
                     <div class="password-error hidden" id="password-error">❌ Mot de passe incorrect !</div>
                     <div class="modal-buttons">
@@ -407,22 +407,22 @@
             <div class="window-content">
                 <div class="custom-timer-form">
                     <div class="form-row">
-                        <label>Temps de travail :</label>
+                        <label>Temps de travail:</label>
                         <input type="number" id="modal-work-time" class="pixel-input" min="1" max="180" value="25">
                         <span>min</span>
                     </div>
                     <div class="form-row">
-                        <label>Pause courte :</label>
+                        <label>Pause courte:</label>
                         <input type="number" id="modal-short-break" class="pixel-input" min="1" max="30" value="5">
                         <span>min</span>
                     </div>
                     <div class="form-row">
-                        <label>Pause longue :</label>
+                        <label>Pause longue:</label>
                         <input type="number" id="modal-long-break" class="pixel-input" min="1" max="60" value="15">
                         <span>min</span>
                     </div>
                     <div class="form-row">
-                        <label>Cycles avant pause longue :</label>
+                        <label>Cycles avant pause longue:</label>
                         <input type="number" id="modal-cycles" class="pixel-input" min="1" max="10" value="4">
                     </div>
                     <div class="modal-buttons">
