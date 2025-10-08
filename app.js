@@ -1224,6 +1224,12 @@ function mettreAJourInterfaceProfil() {
     document.getElementById('profile-level').textContent = utilisateurActuel.niveau;
     document.getElementById('profile-points').textContent = utilisateurActuel.pointsTotaux;
     document.getElementById('last-login').textContent = utilisateurActuel.derniereConnexion;
+    document.getElementById('profile-etudes').value = utilisateurActuel.etudes;
+    document.getElementById('save-profile-btn').addEventListener('click', () => {
+          utilisateurActuel.etudes = document.getElementById('profile-etudes').value.trim();
+  
+});
+
 }
 
 function exporterDonneesUtilisateur() {
