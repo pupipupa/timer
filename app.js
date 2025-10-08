@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function initialiserApplication() {
     // Initialiser les utilisateurs globaux
     utilisateursGlobaux = [
-        {"nomUtilisateur": "Admin", "points": 1250, "ligue": "Argent", "Etudes": "Info"},
+        {"nomUtilisateur": "Admin", "points": 1250, "ligue": "Argent", etudes: "Info"},
     ];
     
     // Initialiser les utilisateurs par défaut avec nouvelles statistiques
@@ -320,7 +320,7 @@ function gererConnexion(e) {
         utilisateurActuel.acceGithubDebloque = false;
         afficherEcran('main-screen');
         mettreAJourInterfaceUtilisateur();
-        afficherNotification('Bienvenue, ' + nomUtilisateur + ' !', 'success');
+        afficherNotification('Bienvenue, ' + nomUtilisateur + '!', 'success');
     } else {
         afficherNotification('Nom d\'utilisateur ou mot de passe incorrect', 'error');
     }
@@ -330,7 +330,7 @@ function gererInscription() {
     const nomUtilisateur = document.getElementById('username').value;
     const motDePasse = document.getElementById('password').value;
 
-    if (!nomUtilisateur || !motDePasse) {
+    if (!nomUtilisateur ||!motDePasse) {
         afficherNotification('Veuillez entrer un nom d\'utilisateur et un mot de passe', 'error');
         return;
     }
@@ -365,11 +365,11 @@ function gererInscription() {
     };
 
     utilisateurs.set(nomUtilisateur, nouvelUtilisateur);
-    utilisateursGlobaux.push({nomUtilisateur: nomUtilisateur, points: 0, ligue: "Bronze", pays: "FR"});
+    utilisateursGlobaux.push({nomUtilisateur: nomUtilisateur, points: 0, ligue: "Bronze", etudes: ""});
     utilisateurActuel = nouvelUtilisateur;
     afficherEcran('main-screen');
     mettreAJourInterfaceUtilisateur();
-    afficherNotification('Compte créé avec succès !', 'success');
+    afficherNotification('Compte créé avec succès!', 'success');
 }
 
 function gererDeconnexion() {
@@ -456,19 +456,32 @@ function arreterMinuteur() {
 }
 
 function passerMinuteur() {
-    // Nouvelle logique : calculer seulement le temps écoulé
-    if (phaseActuelle === 'work') {
-        const tempsEcoule = Math.floor((tempsTotal - tempsRestant) / 60); // Minutes écoulées
-        if (tempsEcoule > 0) {
-            ajouterSessionEtudeInterrompue(tempsEcoule);
-            const message = messagesInterface.sessionInterrompue.replace('{temps}', tempsEcoule);
-            afficherNotification(message, 'info');
-            verifierSucces();
-        }
+  // Calculer les secondes réellement écoulées
+  const secondesEcoulees = Math.max(0, tempsTotal - tempsRestant);
+  const tempsEcouleMin = Math.floor(secondesEcoulees / 60);
+
+  if (phaseActuelle === 'work') {
+    if (tempsEcouleMin > 0) {
+      ajouterSessionEtudeInterrompue(tempsEcouleMin);
+      const message = messagesInterface.sessionInterrompue.replace('{temps}', tempsEcouleMin);
+      afficherNotification(message, 'info');
+      verifierSucces();
     }
-    
-    minuteurTermine();
+  }
+
+  // Arrêter le minuteur
+  clearInterval(intervalleMinuteur);
+  minuteurEnCours = false;
+
+  // Passer à la phase suivante sans créditer la session complète
+  passerAPhasesuivante();
+
+  // Mettre à jour l'interface
+  mettreAJourControlesMinuteur();
+  mettreAJourAffichageMinuteur();
+  mettreAJourBarreProgres();
 }
+
 
 function reinitialiserMinuteur() {
     const config = typesMinuteurs[typeMinuteurActuel];
@@ -527,7 +540,7 @@ function passerAPhasesuivante() {
         tempsRestant = config.tempsTravail * 60;
         tempsTotal = config.tempsTravail * 60;
         document.getElementById('timer-session').textContent = 'Travail';
-        if (phaseActuelle !== 'longBreak') {
+        if (phaseActuelle!== 'longBreak') {
             cycleActuel++;
         }
     }
@@ -613,8 +626,6 @@ function ajouterSessionEtudeInterrompue(minutes) {
     // Ajouter seulement le temps réellement étudié
     utilisateurActuel.tempsEtudeTotale += minutes;
     // Ajouter le temps prévu total (ce qui était planifié)
-    const tempsPrevu = Math.floor(tempsTotal / 60);
-    utilisateurActuel.tempsPrevu += tempsPrevu;
     utilisateurActuel.sessionsInterrompues++;
     
     const aujourdhui = new Date().toDateString();
@@ -655,7 +666,7 @@ function ajouterPoints(points) {
     const nouveauNiveau = Math.floor(utilisateurActuel.pointsTotaux / 100) + 1;
     if (nouveauNiveau > utilisateurActuel.niveau) {
         utilisateurActuel.niveau = nouveauNiveau;
-        afficherNotification(`Félicitations ! Vous avez atteint le niveau ${nouveauNiveau} !`, 'success');
+        afficherNotification(`Félicitations! Vous avez atteint le niveau ${nouveauNiveau}!`, 'success');
     }
 }
 
@@ -898,7 +909,7 @@ function rendreTournois() {
 }
 
 function inscrirePourTournoi() {
-    afficherNotification('Vous êtes inscrit au tournoi !', 'success');
+    afficherNotification('Vous êtes inscrit au tournoi!', 'success');
     document.getElementById('register-weekly').textContent = 'Inscrit';
     document.getElementById('register-weekly').disabled = true;
 }
@@ -920,7 +931,7 @@ function rendreClassements() {
             <td>${utilisateur.nomUtilisateur}</td>
             <td>${utilisateur.points}</td>
             <td>${utilisateur.ligue}</td>
-            <td>${utilisateur.pays}</td>
+            <td>${utilisateur.etudes}</td>
         `;
         tbody.appendChild(rangee);
     });
@@ -931,12 +942,12 @@ function rendreAmis() {
     const listeAmis = document.getElementById('friends-list');
     const serieGroupe = document.getElementById('group-streak');
     
-    if (!utilisateurActuel || !listeAmis) return;
+    if (!utilisateurActuel ||!listeAmis) return;
     
     listeAmis.innerHTML = '<h4>Mes amis :</h4>';
     
     if (utilisateurActuel.amis.length === 0) {
-        listeAmis.innerHTML += '<p>Vous n\'avez pas encore d\'amis. Ajoutez des amis pour étudier ensemble !</p>';
+        listeAmis.innerHTML += '<p>Vous n\'avez pas encore d\'amis. Ajoutez des amis pour étudier ensemble!</p>';
     } else {
         utilisateurActuel.amis.forEach(nomAmi => {
             const divAmi = document.createElement('div');
@@ -947,7 +958,7 @@ function rendreAmis() {
     }
     
     if (serieGroupe) {
-        serieGroupe.innerHTML = '<h4>Série de groupe : 3 jours</h4><p>Vous et vos amis étudiez ensemble depuis 3 jours consécutifs !</p>';
+        serieGroupe.innerHTML = '<h4>Série de groupe : 3 jours</h4><p>Vous et vos amis étudiez ensemble depuis 3 jours consécutifs!</p>';
     }
 }
 
@@ -982,7 +993,7 @@ function ajouterAmi(e) {
     document.getElementById('friend-username').value = '';
     rendreAmis();
     verifierSucces();
-    afficherNotification(`${nomUtilisateurAmi} ajouté aux amis !`, 'success');
+    afficherNotification(`${nomUtilisateurAmi} ajouté aux amis!`, 'success');
 }
 
 // Fonctions de synchronisation GitHub avec nouveau système de sécurité
@@ -1026,7 +1037,7 @@ function testerTokenGitHub() {
     
     // Simulation de vérification du token
     setTimeout(() => {
-        afficherNotification('Token vérifié avec succès !', 'success');
+        afficherNotification('Token vérifié avec succès!', 'success');
         document.getElementById('github-status').innerHTML = '<p style="color: var(--y2k-primary);">✅ Token valide</p>';
     }, 1000);
 }
@@ -1045,7 +1056,7 @@ function demarrerSyncGitHub() {
     if (!utilisateurActuel.succes.includes('sync_github')) {
         utilisateurActuel.succes.push('sync_github');
         ajouterPoints(100);
-        afficherNotification('Succès débloqué : Gardien du Cloud !', 'success');
+        afficherNotification('Succès débloqué : Gardien du Cloud!', 'success');
     }
     
     sauvegarderVersGitHub();
@@ -1057,7 +1068,7 @@ function sauvegarderVersGitHub() {
     
     // Simulation de sauvegarde
     setTimeout(() => {
-        afficherNotification('Données sauvegardées sur GitHub !', 'success');
+        afficherNotification('Données sauvegardées sur GitHub!', 'success');
         document.getElementById('github-status').innerHTML = '<p style="color: var(--y2k-primary);">✅ Dernière sauvegarde : ' + new Date().toLocaleTimeString('fr-FR') + '</p>';
     }, 1500);
 }
@@ -1070,7 +1081,7 @@ function restaurerDepuisGitHub() {
     
     // Simulation de restauration
     setTimeout(() => {
-        afficherNotification('Données restaurées depuis GitHub !', 'success');
+        afficherNotification('Données restaurées depuis GitHub!', 'success');
         mettreAJourInterfaceUtilisateur();
     }, 1500);
 }
@@ -1096,7 +1107,7 @@ function rendreSucces() {
         const carte = document.createElement('div');
         const estDebloque = utilisateurActuel.succes.includes(succes.id);
         
-        carte.className = `achievement-card ${estDebloque ? 'unlocked' : 'locked'}`;
+        carte.className = `achievement-card ${estDebloque? 'unlocked' : 'locked'}`;
         carte.innerHTML = `
             <div class="achievement-card-icon">${succes.icone}</div>
             <div class="achievement-card-name">${succes.nom}</div>
@@ -1144,7 +1155,7 @@ function verifierSucces() {
         if (debloque) {
             utilisateurActuel.succes.push(succes.id);
             ajouterPoints(succes.points);
-            afficherNotification(`Succès débloqué : ${succes.nom} !`, 'success');
+            afficherNotification(`Succès débloqué : ${succes.nom}!`, 'success');
             jouerSon('achievement');
         }
     });
@@ -1202,7 +1213,7 @@ function sauvegarderParametresMinuteurPersonnalise() {
     mettreAJourAffichageTypeMinuteur();
     masquerModal('custom-timer-modal');
     
-    afficherNotification('Paramètres du minuteur sauvegardés !', 'success');
+    afficherNotification('Paramètres du minuteur sauvegardés!', 'success');
 }
 
 // Fonctions du profil
@@ -1230,7 +1241,7 @@ function exporterDonneesUtilisateur() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    afficherNotification('Données exportées !', 'success');
+    afficherNotification('Données exportées!', 'success');
 }
 
 function importerDonneesUtilisateur(event) {
@@ -1250,7 +1261,7 @@ function importerDonneesUtilisateur(event) {
             utilisateurs.set(utilisateurActuel.nomUtilisateur, utilisateurActuel);
             
             mettreAJourInterfaceUtilisateur();
-            afficherNotification('Données importées avec succès !', 'success');
+            afficherNotification('Données importées avec succès!', 'success');
         } catch (erreur) {
             afficherNotification('Erreur lors de l\'import des données : ' + erreur.message, 'error');
         }
@@ -1285,7 +1296,7 @@ function afficherNotification(message, type = 'info') {
         position: fixed;
         top: 20px;
         right: 20px;
-        background: var(--y2k-${type === 'error' ? 'primary' : 'secondary'});
+        background: var(--y2k-${type === 'error'? 'primary' : 'secondary'});
         color: var(--y2k-text);
         padding: var(--space-12) var(--space-16);
         border-radius: var(--radius-base);
@@ -1312,7 +1323,7 @@ function afficherNotification(message, type = 'info') {
 }
 
 function jouerSon(type) {
-    if (!utilisateurActuel || !utilisateurActuel.parametres.sonActive) return;
+    if (!utilisateurActuel ||!utilisateurActuel.parametres.sonActive) return;
     
     const contexteAudio = new (window.AudioContext || window.webkitAudioContext)();
     const oscillateur = contexteAudio.createOscillator();
