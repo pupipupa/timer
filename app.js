@@ -115,11 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function initialiserApplication() {
     // Initialiser les utilisateurs globaux
     utilisateursGlobaux = [
-        {"nomUtilisateur": "MaîtreÉtude", "points": 1250, "ligue": "Argent", "pays": "FR"},
-        {"nomUtilisateur": "RoiFocus", "points": 3200, "ligue": "Or", "pays": "BE"},
-        {"nomUtilisateur": "ReineApprentissage", "points": 850, "ligue": "Bronze", "pays": "CH"},
-        {"nomUtilisateur": "NinjaCode", "points": 5500, "ligue": "Platine", "pays": "CA"},
-        {"nomUtilisateur": "GénieMaths", "points": 2100, "ligue": "Or", "pays": "FR"}
+        {"nomUtilisateur": "Admin", "points": 1250, "ligue": "Argent", "Etudes": "Info"},
     ];
     
     // Initialiser les utilisateurs par défaut avec nouvelles statistiques
