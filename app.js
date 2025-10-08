@@ -1,49 +1,3 @@
-// Variables globales pour stocker les données de l'application
-// Сохраняет etudes по Enter
-document.addEventListener('DOMContentLoaded', function() {
-    const etudesInput = document.getElementById('profile-etudes');
-    if (etudesInput) {
-        etudesInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                if (utilisateurActuel) {
-                    utilisateurActuel.etudes = this.value.trim();
-                    mettreAJourInterfaceProfil();
-                    // Можно добавить сохранение в localStorage/gist/server
-                    afficherNotification('Etudes mises à jour !', 'success');
-                }
-            }
-        });
-    }
-});
-document.addEventListener('DOMContentLoaded', function() {
-    const photoInput = document.getElementById('photo-upload');
-    if (photoInput) {
-        photoInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    document.getElementById('user-photo').src = ev.target.result;
-                                // Сохраняем фото в профиль (base64)
-                                if (utilisateurActuel) {
-                                    utilisateurActuel.photo = ev.target.result;
-                                    // Сохраняем фото в localStorage
-                                    try {
-                                        localStorage.setItem('userPhoto_' + utilisateurActuel.nomUtilisateur, ev.target.result);
-                                    } catch (e) {
-                                        console.warn('Ошибка сохранения фото в localStorage:', e);
-                                    }
-                                    // Сохраняем фото в gist через GitHub API
-                                    if (utilisateurActuel && utilisateurActuel.syncGithubActive && utilisateurActuel.tokenGithub) {
-                                        sauvegarderPhotoProfilDansGist(utilisateurActuel.nomUtilisateur, ev.target.result, utilisateurActuel.tokenGithub);
-                                    }
-                                }
-                }
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-});
 let utilisateurActuel = null;
 let utilisateurs = new Map();
 let utilisateursGlobaux = [];
@@ -1460,3 +1414,38 @@ stylesNotifications.textContent = `
     }
 `;
 document.head.appendChild(stylesNotifications);
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Обработчик Enter для поля etudes
+  const etudesInput = document.getElementById('profile-etudes');
+  if (etudesInput) {
+    etudesInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        if (utilisateurActuel) {
+          utilisateurActuel.etudes = this.value.trim();
+          mettreAJourInterfaceProfil();
+          afficherNotification('Etudes mises à jour !', 'success');
+        }
+      }
+    });
+  }
+
+  // Обработчик загрузки фото
+  const photoInput = document.getElementById('photo-upload');
+  if (photoInput) {
+    photoInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          document.getElementById('user-photo').src = ev.target.result;
+          if (utilisateurActuel) {
+            utilisateurActuel.photo = ev.target.result;
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+});
