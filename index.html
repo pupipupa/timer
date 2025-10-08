@@ -16,26 +16,27 @@
     <div id="login-screen" class="screen active">
         <div class="window login-window">
             <div class="window-header">
-                <span class="window-title">💾 StudyTime</span>
-                <button class="window-btn close-btn">✕</button>
+                <span class="window-title">StudyTime</span>
+                <button class="window-btn close-btn"></button>
             </div>
             <div class="window-content">
                 <div class="pixel-logo">
-                    <div class="logo-heart">💖</div>
+                    <div class="logo-heart"></div>
                     <h1>StudyTime</h1>
                     <p class="subtitle">assistant pour étudier</p>
                 </div>
+                
                 <form id="login-form" class="auth-form">
                     <div class="form-group">
-                        <label for="username">Nom d'utilisateur:</label>
+                        <label for="username">Nom d'utilisateur</label>
                         <input type="text" id="username" class="pixel-input" placeholder="Entrez votre nom..." required>
                     </div>
                     <div class="form-group">
-                        <label for="password">Mot de passe:</label>
+                        <label for="password">Mot de passe</label>
                         <input type="password" id="password" class="pixel-input" placeholder="••••••••" required>
                     </div>
-                    <button type="submit" class="pixel-btn primary-btn">log in</button>
-                    <button type="button" id="signup-btn" class="pixel-btn secondary-btn">sign up </button>
+                    <button type="submit" class="pixel-btn primary">Se connecter</button>
+                    <button type="button" id="signup-btn" class="pixel-btn secondary">Créer un compte</button>
                 </form>
             </div>
         </div>
@@ -43,338 +44,346 @@
 
     <!-- Écran principal -->
     <div id="main-screen" class="screen">
-        <!-- Barre supérieure -->
-        <header class="top-bar">
-            <div class="user-info">
-                <div class="user-avatar">👤</div>
-                <div class="user-details">
-                    <span id="current-username">Admin</span>
-                    <div class="level-info">
-                        <span class="level">Niveau <span id="user-level">5</span></span>
-                        <span class="points">⭐ <span id="user-points">1250</span></span>
-                    </div>
-                </div>
+        <!-- Barre de navigation -->
+        <nav class="nav-bar">
+            <div class="nav-brand">
+                <span class="nav-logo">ST</span>
+                <span>StudyTime</span>
             </div>
-            <nav class="main-nav">
-                <button class="nav-btn active" data-tab="dashboard">📊 Tableau de Bord</button>
-                <button class="nav-btn" data-tab="statistics">📈 Statistiques</button>
+            <div class="nav-menu">
+                <button class="nav-btn active" data-tab="timer">⏰ Minuteur</button>
+                <button class="nav-btn" data-tab="statistics">📊 Statistiques</button>
+                <button class="nav-btn" data-tab="achievements">🏅 Succès</button>
                 <button class="nav-btn" data-tab="tournaments">⚔️ Tournois</button>
                 <button class="nav-btn" data-tab="leaderboards">🏅 Classements</button>
                 <button class="nav-btn" data-tab="friends">🤝 Amis</button>
-                <button class="nav-btn" data-tab="githubsync">🐙 Sync GitHub</button>
-                <button class="nav-btn" data-tab="achievements">🏆 Succès</button>
+                <button class="nav-btn" data-tab="githubsync">🐙 GitHub</button>
                 <button class="nav-btn" data-tab="settings">⚙️ Paramètres</button>
                 <button class="nav-btn" data-tab="profile">👤 Profil</button>
-            </nav>
-            <button id="logout-btn" class="pixel-btn logout-btn">↩️ Se déconnecter</button>
-        </header>
-        <main class="content-container">
-            <!-- Tableau de Bord -->
-            <div id="dashboard-tab" class="tab-content active">
-                <div class="dashboard-grid">
-                    <!-- Minuteur principal -->
-                    <div class="timer-window window">
-                        <div class="window-header">
-                            <span class="window-title">⏰ Minuteur</span>
-                        </div>
-                        <div class="window-content">
-                            <div class="timer-display">
-                                <div class="timer-type">
-                                    <span id="current-timer-type">Pomodoro</span>
-                                    <span id="timer-session">Travail</span>
-                                </div>
-                                <div class="time-display" id="time-display">25:00</div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" id="progress-fill"></div>
-                                </div>
+                <button id="logout-btn" class="nav-btn logout">🚪 Déconnexion</button>
+            </div>
+        </nav>
+
+        <!-- Contenu principal -->
+        <main class="main-content">
+            <!-- Onglet Minuteur -->
+            <div id="timer-tab" class="tab-content active">
+                <div class="timer-container">
+                    <div class="timer-header">
+                        <h2>⏰ Minuteur</h2>
+                        <select id="timer-type" class="pixel-select">
+                            <option value="pomodoro">Pomodoro</option>
+                            <option value="deep">Concentration Profonde</option>
+                            <option value="sprint">Sprint Rapide</option>
+                            <option value="custom">Personnalisé</option>
+                        </select>
+                    </div>
+
+                    <div class="timer-display">
+                        <div class="timer-circle">
+                            <div class="progress-ring">
+                                <div id="progress-fill" class="progress-fill"></div>
                             </div>
-                            <div class="timer-controls">
-                                <button id="start-btn" class="pixel-btn primary-btn">▶️ Démarrer</button>
-                                <button id="pause-btn" class="pixel-btn secondary-btn hidden">⏸️ Pause</button>
-                                <button id="stop-btn" class="pixel-btn danger-btn">⏹️ Arrêter</button>
-                                <button id="skip-btn" class="pixel-btn secondary-btn">⏭️ Passer</button>
-                            </div>
-                            <div class="timer-selector">
-                                <select id="timer-type" class="pixel-select">
-                                    <option value="pomodoro">🍅 Pomodoro (25/5 min)</option>
-                                    <option value="deep">🧠 Concentration Profonde (90/20 min)</option>
-                                    <option value="sprint">⚡ Sprint Rapide (15/3 min)</option>
-                                    <option value="custom">🛠️ Personnalisé</option>
-                                </select>
+                            <div class="timer-info">
+                                <div id="timer-session" class="session-type">Travail</div>
+                                <div id="time-display" class="time">25:00</div>
+                                <div id="current-timer-type" class="timer-type-display">Pomodoro</div>
                             </div>
                         </div>
                     </div>
-                    <!-- Statistiques rapides -->
-                    <div class="stats-window window">
-                        <div class="window-header">
-                            <span class="window-title">📊 Aujourd'hui</span>
-                        </div>
-                        <div class="window-content">
-                            <div class="quick-stats">
-                                <div class="stat-item">
-                                    <div class="stat-icon">🔥</div>
-                                    <div class="stat-info">
-                                        <span class="stat-value" id="current-streak">7</span>
-                                        <span class="stat-label">jours consécutifs</span>
-                                    </div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-icon">⏱️</div>
-                                    <div class="stat-info">
-                                        <span class="stat-value" id="today-time">0</span>
-                                        <span class="stat-label">min aujourd'hui</span>
-                                    </div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-icon">✅</div>
-                                    <div class="stat-info">
-                                        <span class="stat-value" id="sessions-completed">24</span>
-                                        <span class="stat-label">sessions</span>
-                                    </div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-icon">📈</div>
-                                    <div class="stat-info">
-                                        <span class="stat-value" id="completion-rate">73</span>
-                                        <span class="stat-label">% complétion</span>
-                                    </div>
-                                </div>
+
+                    <div class="timer-controls">
+                        <button id="start-btn" class="control-btn start">▶</button>
+                        <button id="pause-btn" class="control-btn pause hidden">⏸</button>
+                        <button id="stop-btn" class="control-btn stop">⏹</button>
+                        <button id="skip-btn" class="control-btn skip">⏭</button>
+                    </div>
+                </div>
+
+                <!-- Statistiques quotidiennes -->
+                <div class="daily-stats">
+                    <h3>📊 Aujourd'hui</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">🔥</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="current-streak">7</div>
+                                <div class="stat-label">jours consécutifs</div>
                             </div>
                         </div>
-                    </div>
-                    <!-- Succès récents -->
-                    <div class="achievements-window window">
-                        <div class="window-header">
-                            <span class="window-title">🏅 Succès</span>
+                        <div class="stat-card">
+                            <div class="stat-icon">⏱</div>
+                            <div class="stat-info">
+                                <div class="stat-value"><span id="today-time">0</span> min</div>
+                                <div class="stat-label">aujourd'hui</div>
+                            </div>
                         </div>
-                        <div class="window-content">
-                            <div class="recent-achievements" id="recent-achievements">
-                                <div class="achievement-badge">
-                                    <span class="achievement-icon">🏆</span>
-                                    <span class="achievement-name">Premier Minuteur</span>
-                                </div>
-                                <div class="achievement-badge">
-                                    <span class="achievement-icon">🔥</span>
-                                    <span class="achievement-name">Série de 5</span>
-                                </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="sessions-completed">24</div>
+                                <div class="stat-label">sessions</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🎯</div>
+                            <div class="stat-info">
+                                <div class="stat-value"><span id="completion-rate">73</span> %</div>
+                                <div class="stat-label">complétion</div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Succès récents -->
+                <div class="recent-achievements">
+                    <h3>🏅 Succès</h3>
+                    <div id="recent-achievements" class="achievement-badges">
+                        <div class="achievement-badge">
+                            <span class="achievement-icon">🏆</span>
+                            <span class="achievement-name">Premier Minuteur</span>
+                        </div>
+                        <div class="achievement-badge">
+                            <span class="achievement-icon">🔥</span>
+                            <span class="achievement-name">Série de 5</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <!-- Statistiques -->
+
+            <!-- Onglet Statistiques -->
             <div id="statistics-tab" class="tab-content">
-                <div class="window full-window">
-                    <div class="window-header">
-                        <span class="window-title">📈 Statistiques Détaillées</span>
+                <h2>📈 Statistiques Détaillées</h2>
+                
+                <div class="stats-section">
+                    <h3>⚡ Efficacité - Semaine</h3>
+                    <div id="chart-week" class="chart-container">
+                        <canvas></canvas>
                     </div>
-                    <div class="window-content">
-                        <div class="advanced-analytics-grid">
-                            <div class="analytics-block">
-                                <h3>⚡ Efficacité - Semaine</h3>
-                                <div class="chart-container" id="chart-week" style="height:280px;position:relative"><canvas></canvas></div>
-                            </div>
-                            <div class="analytics-block">
-                                <h3>📊 Sessions: Complètes vs Interrompues</h3>
-                                <div class="chart-container" id="chart-completion" style="height:280px;position:relative"><canvas></canvas></div>
-                                <div class="completion-stats">
-                                    <p><span class="stat-highlight" id="complete-sessions">18</span> sessions complètes</p>
-                                    <p><span class="stat-highlight" id="interrupted-sessions">6</span> sessions interrompues</p>
-                                    <p>Temps réel: <span class="stat-highlight" id="real-time">1450</span> min</p>
-                                    <p>Temps prévu: <span class="stat-highlight" id="planned-time">1800</span> min</p>
-                                </div>
-                            </div>
-                            <div class="analytics-block">
-                                <h3>📊 Distribution par Matière</h3>
-                                <div class="chart-container" id="chart-categories" style="height:280px;position:relative"><canvas></canvas></div>
-                            </div>
-                            <div class="analytics-block">
-                                <h3>🔬 Analyse des Pauses</h3>
-                                <div class="chart-container" id="chart-correlation" style="height:280px;position:relative"><canvas></canvas></div>
-                            </div>
+                </div>
+
+                <div class="stats-section">
+                    <h3>📊 Sessions: Complètes vs Interrompues</h3>
+                    <div class="completion-stats">
+                        <div class="completion-item">
+                            <span class="completion-number" id="complete-sessions">18</span>
+                            <span class="completion-label">sessions complètes</span>
                         </div>
+                        <div class="completion-item">
+                            <span class="completion-number" id="interrupted-sessions">6</span>
+                            <span class="completion-label">sessions interrompues</span>
+                        </div>
+                    </div>
+                    <div class="time-comparison">
+                        <p>Temps réel: <span id="real-time">1450</span> min</p>
+                        <p>Temps prévu: <span id="planned-time">1800</span> min</p>
+                    </div>
+                    <div id="chart-completion" class="chart-container">
+                        <canvas></canvas>
+                    </div>
+                </div>
+
+                <div class="stats-section">
+                    <h3>📊 Distribution par Matière</h3>
+                    <div id="chart-categories" class="chart-container">
+                        <canvas></canvas>
+                    </div>
+                </div>
+
+                <div class="stats-section">
+                    <h3>🔬 Analyse des Pauses</h3>
+                    <div id="chart-correlation" class="chart-container">
+                        <canvas></canvas>
                     </div>
                 </div>
             </div>
-            <!-- Tournois -->
+
+            <!-- Onglet Tournois -->
             <div id="tournaments-tab" class="tab-content">
-                <div class="window full-window">
-                    <div class="window-header">
-                        <span class="window-title">⚔️ Tournois et Compétitions</span>
+                <h2>⚔️ Tournois et Compétitions</h2>
+                
+                <div class="tournament-section">
+                    <h3>Tournoi Actuel: <span id="weekly-t-name">Défi Focus Hebdomadaire</span></h3>
+                    <div class="tournament-info">
+                        <p><strong>Catégories:</strong> Débutant, Avancé, Expert</p>
+                        <p><strong>Prix:</strong> 500, 300, 200 points</p>
                     </div>
-                    <div class="window-content">
-                        <div class="tournament-sections">
-                            <div class="tournament-info">
-                                <h3>Tournoi Actuel: <span id="weekly-t-name">Défi Focus Hebdomadaire</span></h3>
-                                <p>Catégories: <span>Débutant, Avancé, Expert</span></p>
-                                <p>Prix: <span>500, 300, 200 points</span></p>
-                                <button id="register-weekly" class="pixel-btn primary-btn">Participer</button>
-                            </div>
-                            <div class="tournament-bracket">
-                                <h3>Classement du Tournoi</h3>
-                                <div id="bracket-container">
-                                    <p>Les participants seront affichés après l'inscription</p>
-                                </div>
-                            </div>
-                        </div>
+                    <button id="register-weekly" class="pixel-btn primary">S'inscrire</button>
+                </div>
+
+                <div class="tournament-section">
+                    <h3>Classement du Tournoi</h3>
+                    <div id="bracket-container" class="bracket-container">
+                        <p>Les participants seront affichés après l'inscription</p>
                     </div>
                 </div>
             </div>
-            <!-- Classements -->
+
+            <!-- Onglet Classements -->
             <div id="leaderboards-tab" class="tab-content">
-                <div class="window full-window">
-                    <div class="window-header">
-                        <span class="window-title">🏅 Classements Globaux</span>
-                    </div>
-                    <div class="window-content">
-                        <div class="leaderboard-table-block">
-                            <table class="leaderboard-table" id="global-leaderboard">
-                                <thead>
-                                    <tr>
-                                        <th>Rang</th>
-                                        <th>Nom</th>
-                                        <th>Points</th>
-                                        <th>Ligue</th>
-                                        <th>Etudes</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>
+                <h2>🏅 Classements Globaux</h2>
+                
+                <div class="leaderboard-section">
+                    <table id="global-leaderboard" class="pixel-table">
+                        <thead>
+                            <tr>
+                                <th>Rang</th>
+                                <th>Nom</th>
+                                <th>Points</th>
+                                <th>Ligue</th>
+                                <th>Etudes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Les données seront insérées dynamiquement -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            <!-- Amis -->
+
+            <!-- Onglet Amis -->
             <div id="friends-tab" class="tab-content">
-                <div class="window full-window">
-                    <div class="window-header">
-                        <span class="window-title">🤝 Amis et Équipes</span>
+                <h2>🤝 Amis et Équipes</h2>
+                
+                <div class="friends-section">
+                    <h3>Ajouter des amis</h3>
+                    <form id="add-friend-form" class="friend-form">
+                        <input type="text" id="friend-username" class="pixel-input" placeholder="Nom d'utilisateur">
+                        <button type="submit" class="pixel-btn primary">Ajouter</button>
+                    </form>
+                </div>
+
+                <div class="friends-list">
+                    <h3>Mes amis</h3>
+                    <div id="friends-list-container">
+                        <!-- Les amis seront ajoutés dynamiquement -->
                     </div>
-                    <div class="window-content">
-                        <div class="friends-block">
-                            <h3>Ajouter des amis</h3>
-                            <form id="add-friend-form" class="add-friend-form">
-                                <input type="text" id="friend-username" class="pixel-input" placeholder="Nom d'utilisateur..." required>
-                                <button type="submit" class="pixel-btn secondary-btn">➕ Ajouter</button>
-                            </form>
-                            <div id="friends-list" class="friends-list"></div>
-                            <div id="group-streak" class="group-streak"></div>
-                        </div>
+                </div>
+
+                <div class="group-study">
+                    <h3>Étude en groupe</h3>
+                    <div id="group-streak">
+                        <!-- Informations sur les séries de groupe -->
                     </div>
                 </div>
             </div>
-            <!-- Sync GitHub -->
+
+            <!-- Onglet GitHub Sync -->
             <div id="githubsync-tab" class="tab-content">
-                <div class="window full-window">
-                    <div class="window-header">
-                        <span class="window-title">🐙 Synchronisation GitHub</span>
+                <h2>🐙 Synchronisation GitHub</h2>
+                
+                <!-- Contenu verrouillé -->
+                <div id="github-locked-content" class="locked-content">
+                    <div class="lock-icon">🔒</div>
+                    <p>Accès restreint aux paramètres de synchronisation</p>
+                    <button id="unlock-github" class="pixel-btn primary">Déverrouiller</button>
+                </div>
+
+                <!-- Contenu déverrouillé -->
+                <div id="github-unlocked-content" class="hidden">
+                    <div class="github-status">
+                        <div id="github-status">❌ Non configuré</div>
                     </div>
-                    <div class="window-content">
-                        <div id="github-locked-content" class="github-locked">
-                            <p>🔒 Accès restreint aux paramètres de synchronisation</p>
-                            <button id="unlock-github" class="pixel-btn primary-btn">🔓 Débloquer l'accès</button>
+
+                    <div class="github-section">
+                        <h3>Configuration</h3>
+                        <div class="form-group">
+                            <label for="github-token">Token GitHub:</label>
+                            <input type="password" id="github-token" class="pixel-input" placeholder="ghp_...">
                         </div>
-                        <div id="github-unlocked-content" class="github-unlocked hidden">
-                            <form id="github-sync-form" class="github-sync-form">
-                                <div class="form-group">
-                                    <label for="github-token">Token d'Accès Personnel GitHub:</label>
-                                    <input type="password" id="github-token" class="pixel-input" placeholder="Token GitHub..." required>
-                                </div>
-                                <button type="button" id="test-github-token" class="pixel-btn secondary-btn">Tester le token</button>
-                                <button type="button" id="start-sync" class="pixel-btn primary-btn">Démarrer la synchronisation</button>
-                            </form>
-                            <div class="github-status" id="github-status"></div>
-                            <div class="github-settings">
-                                <label class="checkbox-label"><input type="checkbox" id="auto-backup" checked><span class="checkmark"></span>Sauvegarde automatique</label>
-                                <label class="checkbox-label"><input type="checkbox" id="public-profile"><span class="checkmark"></span>Profil public</label>
-                                <label class="checkbox-label"><input type="checkbox" id="share-statistics" checked><span class="checkmark"></span>Partager les statistiques</label>
-                                <button type="button" id="restore-github-data" class="pixel-btn secondary-btn">Restaurer depuis GitHub</button>
-                            </div>
+                        <div class="github-controls">
+                            <button id="test-github-token" class="pixel-btn secondary">Tester</button>
+                            <button id="start-sync" class="pixel-btn primary">Démarrer Sync</button>
                         </div>
+                    </div>
+
+                    <div class="github-section">
+                        <h3>Options</h3>
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="auto-backup"> Sauvegarde automatique
+                            </label>
+                            <label>
+                                <input type="checkbox" id="public-profile"> Profil public
+                            </label>
+                            <label>
+                                <input type="checkbox" id="share-statistics"> Partager les statistiques
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="github-section">
+                        <button id="restore-github-data" class="pixel-btn secondary">Restaurer depuis GitHub</button>
                     </div>
                 </div>
             </div>
-            <!-- Succès -->
+
+            <!-- Onglet Succès -->
             <div id="achievements-tab" class="tab-content">
-                <div class="window full-window">
-                    <div class="window-header">
-                        <span class="window-title">🏆 Tous les Succès</span>
-                    </div>
-                    <div class="window-content">
-                        <div class="achievements-grid" id="achievements-grid">
-                        </div>
-                    </div>
+                <h2>🏆 Tous les Succès</h2>
+                <div id="achievements-grid" class="achievements-grid">
+                    <!-- Les succès seront chargés dynamiquement -->
                 </div>
             </div>
-            <!-- Paramètres -->
+
+            <!-- Onglet Paramètres -->
             <div id="settings-tab" class="tab-content">
-                <div class="window full-window">
-                    <div class="window-header">
-                        <span class="window-title">⚙️ Paramètres</span>
-                    </div>
-                    <div class="window-content">
-                        <div class="settings-sections">
-                            <div class="settings-section">
-                                <h3>🔊 Son</h3>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="sound-enabled" checked>
-                                    <span class="checkmark"></span>
-                                    Activer les notifications sonores
-                                </label>
-                            </div>
-                            <div class="settings-section">
-                                <h3>⏰ Minuteur personnalisé</h3>
-                                <div class="custom-timer-settings">
-                                    <div class="setting-row">
-                                        <label>Temps de travail (min):</label>
-                                        <input type="number" id="custom-work" class="pixel-input" value="45" min="1" max="180">
-                                    </div>
-                                    <div class="setting-row">
-                                        <label>Pause courte (min):</label>
-                                        <input type="number" id="custom-short-break" class="pixel-input" value="10" min="1" max="30">
-                                    </div>
-                                    <div class="setting-row">
-                                        <label>Pause longue (min):</label>
-                                        <input type="number" id="custom-long-break" class="pixel-input" value="20" min="1" max="60">
-                                    </div>
-                                </div>
-                            </div>
+                <h2>⚙️ Paramètres</h2>
+                
+                <div class="settings-section">
+                    <h3>🔊 Son</h3>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="sound-enabled" checked>
+                        <span>Activer les sons</span>
+                    </label>
+                </div>
+
+                <div class="settings-section">
+                    <h3>⏰ Minuteur personnalisé</h3>
+                    <div class="custom-timer-settings">
+                        <div class="form-group">
+                            <label for="custom-work">Temps de travail (min):</label>
+                            <input type="number" id="custom-work" class="pixel-input" value="45" min="1" max="120">
+                        </div>
+                        <div class="form-group">
+                            <label for="custom-short-break">Pause courte (min):</label>
+                            <input type="number" id="custom-short-break" class="pixel-input" value="10" min="1" max="30">
+                        </div>
+                        <div class="form-group">
+                            <label for="custom-long-break">Pause longue (min):</label>
+                            <input type="number" id="custom-long-break" class="pixel-input" value="20" min="1" max="60">
                         </div>
                     </div>
                 </div>
             </div>
-            <!-- Profil -->
+
+            <!-- Onglet Profil (ИСПРАВЛЕНО: добавлены поля для фото и etudes) -->
             <div id="profile-tab" class="tab-content">
-                <div class="window full-window">
-                    <div class="window-header">
-                        <span class="window-title">👤 Profil Utilisateur</span>
+                <h2>👤 Profil Utilisateur</h2>
+                
+                <div class="profile-section">
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            <img id="user-photo" src="default.png" alt="Photo de profil" style="width:64px;height:64px;border-radius:8px;">
+                            <input type="file" id="photo-upload" accept="image/*" style="margin-top:8px;" class="pixel-input">
+                        </div>
+                        <div class="profile-info">
+                            <h2 id="profile-username">MaîtreÉtude</h2>
+                            <p>Niveau <span id="profile-level">5</span> • <span id="profile-points">1250</span> points</p>
+                            <p>Dernière connexion: <span id="last-login">aujourd'hui</span></p>
+                        </div>
                     </div>
-                    <div class="window-content">
-                        <div class="profile-sections">
-                            <div class="profile-info">
-                                <div class="profile-avatar">
-                                    <img id="user-photo" src="default.jpeg" alt="Photo de profil" style="width:64px;height:64px;border-radius:8px;">
-                                    <input type="file" id="photo-upload" accept="image/*" style="margin-top:8px;">
-                                </div>
-                                <div class="profile-details">
-                                    <h2 id="profile-username">MaîtreÉtude</h2>
-                                    <p>Niveau <span id="profile-level">5</span> • <span id="profile-points">1250</span> points</p>
-                                    <p class="join-date">Dernière connexion: <span id="last-login">aujourd'hui</span></p>
-
-                                    <h3>Etudes</h3>
-                                    <input type="text" id="profile-etudes" class="pixel-input" placeholder="Entrez vos etudes" />
-
-                                </div>
-                            </div>
-                            <div class="data-management">
-                                <h3>📁 Gestion des Données</h3>
-                                <div class="data-buttons">
-                                    <button class="pixel-btn secondary-btn" id="export-data">💾 Exporter les données</button>
-                                    <button class="pixel-btn secondary-btn" id="import-data">📂 Importer les données</button>
-                                    <input type="file" id="import-file" accept=".json" style="display: none;">
-                                </div>
-                                <p class="data-info">Exportez vos données pour une sauvegarde ou importez depuis un fichier.</p>
-                            </div>
+                    
+                    <div class="profile-details">
+                        <h3>Etudes</h3>
+                        <input type="text" id="profile-etudes" class="pixel-input" placeholder="Entrez vos etudes" />
+                        
+                        <h3>📁 Gestion des Données</h3>
+                        <p>Exportez vos données pour une sauvegarde ou importez depuis un fichier.</p>
+                        <div class="data-controls">
+                            <button id="export-data" class="pixel-btn secondary">Exporter</button>
+                            <button id="import-data" class="pixel-btn secondary">Importer</button>
+                            <input type="file" id="import-file" accept=".json" style="display: none;">
                         </div>
                     </div>
                 </div>
@@ -382,65 +391,72 @@
         </main>
     </div>
 
+    <!-- Modales -->
     <!-- Modal de mot de passe GitHub -->
     <div id="github-password-modal" class="modal hidden">
-        <div class="modal-content window password-modal">
-            <div class="window-header">
-                <span class="window-title">🔒 Authentification requise</span>
-                <button class="window-btn close-btn" id="close-password-modal">✕</button>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔐 Accès Administrateur</h3>
+                <button id="close-password-modal" class="close-btn">×</button>
             </div>
-            <div class="window-content">
-                <div class="password-form">
-                    <div class="lock-icon">🔐</div>
-                    <p class="password-message">Mot de passe d'administration:</p>
-                    <input type="password" id="github-admin-password" class="pixel-input password-input" placeholder="Entrez le mot de passe...">
-                    <div class="password-error hidden" id="password-error">❌ Mot de passe incorrect !</div>
-                    <div class="modal-buttons">
-                        <button id="confirm-password" class="pixel-btn primary-btn">✅ Confirmer</button>
-                        <button id="cancel-password" class="pixel-btn secondary-btn">❌ Annuler</button>
-                    </div>
-                </div>
+            <div class="modal-body">
+                <p>Entrez le mot de passe d'administration :</p>
+                <input type="password" id="github-admin-password" class="pixel-input" placeholder="Mot de passe...">
+                <div id="password-error" class="error-message hidden">Mot de passe incorrect</div>
+            </div>
+            <div class="modal-footer">
+                <button id="confirm-password" class="pixel-btn primary">Confirmer</button>
+                <button id="cancel-password" class="pixel-btn secondary">Annuler</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal de configuration du minuteur -->
+    <!-- Modal minuteur personnalisé -->
     <div id="custom-timer-modal" class="modal hidden">
-        <div class="modal-content window">
-            <div class="window-header">
-                <span class="window-title">🛠️ Configurer le minuteur</span>
-                <button class="window-btn close-btn" id="close-custom-modal">✕</button>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚙️ Minuteur Personnalisé</h3>
+                <button id="close-custom-modal" class="close-btn">×</button>
             </div>
-            <div class="window-content">
-                <div class="custom-timer-form">
-                    <div class="form-row">
-                        <label>Temps de travail:</label>
-                        <input type="number" id="modal-work-time" class="pixel-input" min="1" max="180" value="25">
-                        <span>min</span>
-                    </div>
-                    <div class="form-row">
-                        <label>Pause courte:</label>
-                        <input type="number" id="modal-short-break" class="pixel-input" min="1" max="30" value="5">
-                        <span>min</span>
-                    </div>
-                    <div class="form-row">
-                        <label>Pause longue:</label>
-                        <input type="number" id="modal-long-break" class="pixel-input" min="1" max="60" value="15">
-                        <span>min</span>
-                    </div>
-                    <div class="form-row">
-                        <label>Cycles avant pause longue:</label>
-                        <input type="number" id="modal-cycles" class="pixel-input" min="1" max="10" value="4">
-                    </div>
-                    <div class="modal-buttons">
-                        <button id="save-custom-timer" class="pixel-btn primary-btn">💾 Sauvegarder</button>
-                        <button id="cancel-custom-timer" class="pixel-btn secondary-btn">❌ Annuler</button>
-                    </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="modal-work-time">Temps de travail (minutes):</label>
+                    <input type="number" id="modal-work-time" class="pixel-input" value="45" min="1" max="120">
                 </div>
+                <div class="form-group">
+                    <label for="modal-short-break">Pause courte (minutes):</label>
+                    <input type="number" id="modal-short-break" class="pixel-input" value="10" min="1" max="30">
+                </div>
+                <div class="form-group">
+                    <label for="modal-long-break">Pause longue (minutes):</label>
+                    <input type="number" id="modal-long-break" class="pixel-input" value="20" min="1" max="60">
+                </div>
+                <div class="form-group">
+                    <label for="modal-cycles">Nombre de cycles:</label>
+                    <input type="number" id="modal-cycles" class="pixel-input" value="3" min="1" max="10">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="save-custom-timer" class="pixel-btn primary">Sauvegarder</button>
+                <button id="cancel-custom-timer" class="pixel-btn secondary">Annuler</button>
             </div>
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <!-- Zone de notifications -->
+    <div id="notifications-container"></div>
+
+    <!-- Sons d'alerte -->
+    <audio id="sound-start" preload="auto">
+        <source src="sounds/start.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="sound-complete" preload="auto">
+        <source src="sounds/complete.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="sound-error" preload="auto">
+        <source src="sounds/error.mp3" type="audio/mpeg">
+    </audio>
+
+    <script src="app-final.js"></script>
 </body>
 </html>
