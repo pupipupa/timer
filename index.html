@@ -46,12 +46,14 @@
         <!-- Barre supérieure -->
         <header class="top-bar">
             <div class="user-info">
-                <div class="user-avatar">👤</div>
+                <div class="user-avatar"><img id="top-user-photo" src="default.jpeg" alt="avatar"/></div>
                 <div class="user-details">
-                    <span id="current-username">Admin</span>
+                    <div class="top-left-main">
+                        <div class="user-name-pink" id="top-username-pink">—</div>
+                        <div class="total-time" id="top-total-time">0 min</div>
+                    </div>
                     <div class="level-info">
-                        <span class="level">Niveau <span id="user-level">5</span></span>
-                        <span class="points">⭐ <span id="user-points">1250</span></span>
+                        <span class="rank-label">Rang: <span id="user-rank">—</span></span>
                     </div>
                 </div>
             </div>
@@ -169,6 +171,22 @@
                         <span class="window-title">📈 Statistiques Détaillées</span>
                     </div>
                     <div class="window-content">
+                        <div class="stats-header">
+                            <div class="stats-owner">
+                                <div class="stats-owner-avatar"><img id="stats-owner-photo" src="default.jpeg" alt="owner"></div>
+                                <div class="stats-owner-info">
+                                    <div id="stats-owner-name" class="stats-owner-name">Mes Statistiques</div>
+                                    <div id="stats-owner-meta" class="stats-owner-meta">Sélection: vous</div>
+                                </div>
+                                <button id="stats-back-to-me" class="pixel-btn secondary-btn">Retour à moi</button>
+                            </div>
+                            <div class="stats-summary">
+                                <div class="stat-mini"><strong id="summary-total">0</strong><span>min totales</span></div>
+                                <div class="stat-mini"><strong id="summary-avg">0</strong><span>moy / jour</span></div>
+                                <div class="stat-mini"><strong id="summary-streak">0</strong><span>record série</span></div>
+                                <div class="stat-mini"><strong id="summary-eff">0%</strong><span>taux compl.</span></div>
+                            </div>
+                        </div>
                         <div class="advanced-analytics-grid">
                             <div class="analytics-block">
                                 <h3>⚡ Efficacité - Semaine</h3>
@@ -232,8 +250,9 @@
                                 <thead>
                                     <tr>
                                         <th>Rang</th>
+                                        <th>Avatar</th>
                                         <th>Nom</th>
-                                        <th>Points</th>
+                                        <th>Temps (min)</th>
                                         <th>Ligue</th>
                                         <th>Etudes</th>
                                     </tr>
@@ -353,12 +372,17 @@
                         <div class="profile-sections">
                             <div class="profile-info">
                                 <div class="profile-avatar">
-                                    <img id="user-photo" src="default.png" alt="Photo de profil" style="width:64px;height:64px;border-radius:8px;">
-                                    <input type="file" id="photo-upload" accept="image/*" style="margin-top:8px;" class="pixel-input" />
-                                </div>
+                                        <div class="avatar-box">
+                                            <img id="user-photo" src="default.jpeg" alt="Photo de profil">
+                                        </div>
+                                        <div class="avatar-actions">
+                                            <button id="change-photo-btn" class="pixel-btn secondary-btn" type="button">✏️ Changer</button>
+                                            <input type="file" id="photo-upload" accept="image/*" style="display:none;" />
+                                        </div>
+                                    </div>
                                 <div class="profile-details">
-                                    <h2 id="profile-username">MaîtreÉtude</h2>
-                                    <p>Niveau <span id="profile-level">5</span> • <span id="profile-points">1250</span> points</p>
+                                    <h2 id="profile-username">Admin</h2>
+                                    <p>Niveau <span id="profile-level">1</span> • <span id="profile-points">0</span> min d'étude</p>
                                     <p class="join-date">Dernière connexion: <span id="last-login">aujourd'hui</span></p>
                                     <h3>Etudes</h3>
                                     <input type="text" id="profile-etudes" class="pixel-input" placeholder="Entrez vos etudes" />
@@ -434,6 +458,23 @@
                         <button id="save-custom-timer" class="pixel-btn primary-btn">💾 Sauvegarder</button>
                         <button id="cancel-custom-timer" class="pixel-btn secondary-btn">❌ Annuler</button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simple chat panel -->
+    <div id="chat-panel" class="modal hidden">
+        <div class="modal-content window chat-modal">
+            <div class="window-header">
+                <span class="window-title" id="chat-with">Message</span>
+                <button class="window-btn close-btn" id="close-chat">✕</button>
+            </div>
+            <div class="window-content">
+                <div id="chat-messages" style="height:200px;overflow:auto;background:var(--y2k-background);padding:8px;border:1px solid var(--y2k-border);margin-bottom:8px;"></div>
+                <div style="display:flex;gap:8px;">
+                    <input id="chat-input" class="pixel-input" placeholder="Ecrire un message..." style="flex:1;" />
+                    <button id="chat-send" class="pixel-btn primary-btn">Envoyer</button>
                 </div>
             </div>
         </div>

@@ -11,6 +11,17 @@ let tempsRestant = 25 * 60;
 let tempsTotal = 25 * 60;
 let tempsDebut = 0; // Pour calculer le temps réellement écoulé
 let graphiques = {};
+let utilisateurAffiche = null; // user whose statistics are currently displayed (can be a friend)
+
+// Simple embedded SVG placeholder to avoid external file dependency
+const DATA_URI_PLACEHOLDER = 'default.jpeg';
+
+// localStorage key helpers for lastRead per user (map of conversation -> ISO timestamp)
+function getLastReadKey(username) { return `lastRead:${String(username || '')}`; }
+function loadLastRead(username) {
+        try { const raw = localStorage.getItem(getLastReadKey(username)); return raw ? JSON.parse(raw) : {}; } catch (e) { return {}; }
+}
+function saveLastRead(username, obj) { try { localStorage.setItem(getLastReadKey(username), JSON.stringify(obj)); } catch(e){} }
 
 // Configuration de sécurité
 const motDePasseGitHub = "nahuyidi";
@@ -113,32 +124,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function initialiserApplication() {
     // Initialiser les utilisateurs globaux
+    // Initialize global users with Admin user having zeroed stats
     utilisateursGlobaux = [
-        { nomUtilisateur: "Admin", points: 1250, ligue: "Argent", etudes: "Info" },
+        { nomUtilisateur: "Admin", points: 0, ligue: "Bronze", etudes: "", tempsEtudeTotale: 0, tempsPrevu: 0 },
     ];
-    
-    // Initialiser les utilisateurs par défaut avec nouvelles statistiques
-    utilisateurs.set('MaîtreÉtude', {
-        nomUtilisateur: 'MaîtreÉtude',
-        motDePasse: '123456',
-        pointsTotaux: 1250,
-        niveau: 5,
-        serieActuelle: 7,
-        tempsEtudeTotale: 1450, // temps réel étudié
-        tempsPrevu: 1800, // temps total prévu
-        sessionsCompletees: 18,
-        sessionsInterrompues: 6,
-        tauxCompletion: 73,
-        succes: ['premier_minuteur', 'serie_5', 'oiseau_nuit', 'maitre_focus'],
+
+    // Initialize a default Admin user (with zeroed statistics)
+    utilisateurs.set('Admin', {
+        nomUtilisateur: 'Admin',
+        motDePasse: 'adminhuy',
+        pointsTotaux: 0,
+        niveau: 1,
+        serieActuelle: 0,
+        tempsEtudeTotale: 0,
+        tempsPrevu: 0,
+        sessionsCompletees: 0,
+        sessionsInterrompues: 0,
+        tauxCompletion: 0,
+        succes: [],
         derniereConnexion: new Date().toLocaleDateString('fr-FR'),
-        statistiquesQuotidiennes: genererStatistiquesExemple(),
-        amis: ['RoiFocus', 'NinjaCode'],
+        statistiquesQuotidiennes: {},
+        amis: [],
         tokenGithub: '',
         syncGithubActive: false,
-        acceGithubDebloque: false, // Nouvel état pour l'accès GitHub
+        acceGithubDebloque: false,
         parametres: {
             sonActive: true,
-            minuteurPersonnalise: { tempsTravail: 45, pauseCourte: 10, pauseLongue: 20, cycles: 3 }
+            minuteurPersonnalise: { tempsTravail: 25, pauseCourte: 5, pauseLongue: 15, cycles: 4 }
         }
     });
 
@@ -318,7 +330,20 @@ function gererConnexion(e) {
         // Réinitialiser l'accès GitHub à chaque connexion
         utilisateurActuel.acceGithubDebloque = false;
         afficherEcran('main-screen');
+        // Ensure global list has the user for leaderboard sync
+        let globalEntry = utilisateursGlobaux.find(u => u.nomUtilisateur === utilisateurActuel.nomUtilisateur);
+        if (!globalEntry) {
+            utilisateursGlobaux.push({ nomUtilisateur: utilisateurActuel.nomUtilisateur, points: utilisateurActuel.pointsTotaux || 0, ligue: utilisateurActuel.niveau? obtenirLigueUtilisateur(utilisateurActuel.pointsTotaux || 0) : 'Bronze', etudes: utilisateurActuel.etudes || '', tempsEtudeTotale: utilisateurActuel.tempsEtudeTotale || 0, tempsPrevu: utilisateurActuel.tempsPrevu || 0 });
+        } else {
+            globalEntry.points = utilisateurActuel.pointsTotaux || 0;
+            globalEntry.tempsEtudeTotale = utilisateurActuel.tempsEtudeTotale || 0;
+            globalEntry.tempsPrevu = utilisateurActuel.tempsPrevu || 0;
+        }
+        // default displayed user is current user
+        utilisateurAffiche = utilisateurActuel;
         mettreAJourInterfaceUtilisateur();
+    // Update top-left bar
+    mettreAJourTopBar();
         afficherNotification('Bienvenue, ' + nomUtilisateur + '!', 'success');
     } else {
         afficherNotification('Nom d\'utilisateur ou mot de passe incorrect', 'error');
@@ -352,7 +377,7 @@ function gererInscription() {
         tauxCompletion: 0,
         succes: [],
         derniereConnexion: new Date().toLocaleDateString('fr-FR'),
-        statistiquesQuotidiennes: {},
+    statistiquesQuotidiennes: {},
         amis: [],
         tokenGithub: '',
         syncGithubActive: false,
@@ -364,10 +389,16 @@ function gererInscription() {
     };
 
     utilisateurs.set(nomUtilisateur, nouvelUtilisateur);
-    utilisateursGlobaux.push({ nomUtilisateur: nomUtilisateur, points: 0, ligue: "Bronze", etudes: "" });
+    // Add to global list and keep time fields for leaderboard synchronization
+    utilisateursGlobaux.push({ nomUtilisateur: nomUtilisateur, points: 0, ligue: "Bronze", etudes: "", tempsEtudeTotale: 0, tempsPrevu: 0 });
     utilisateurActuel = nouvelUtilisateur;
     afficherEcran('main-screen');
     mettreAJourInterfaceUtilisateur();
+    utilisateurAffiche = utilisateurActuel;
+    // Update top-left bar for new user
+    mettreAJourTopBar();
+    // ensure UI shows zeros explicitly
+    afficherStatsUtilisateur(utilisateurActuel);
     afficherNotification('Compte créé avec succès!', 'success');
 }
 
@@ -377,6 +408,8 @@ function gererDeconnexion() {
     afficherEcran('login-screen');
     document.getElementById('username').value = '';
     document.getElementById('password').value = '';
+    // reset top bar
+    mettreAJourTopBar();
 }
 
 // Fonctions de navigation
@@ -384,6 +417,10 @@ function afficherEcran(idEcran) {
     const ecrans = document.querySelectorAll('.screen');
     ecrans.forEach(ecran => ecran.classList.remove('active'));
     document.getElementById(idEcran).classList.add('active');
+    // If main screen shown, refresh top bar to display current user
+    if (idEcran === 'main-screen') {
+        mettreAJourTopBar();
+    }
 }
 
 function afficherOnglet(idOnglet) {
@@ -421,12 +458,20 @@ function demarrerMinuteur() {
     if (!minuteurEnCours) {
         minuteurEnCours = true;
         tempsDebut = Date.now(); // Marquer le temps de début
+        console.debug('demarrerMinuteur: tempsDebut=', tempsDebut);
         mettreAJourControlesMinuteur();
         
         intervalleMinuteur = setInterval(() => {
             tempsRestant--;
             mettreAJourAffichageMinuteur();
-            mettreAJourBarreProgres();
+            // update visible time and progress
+            const elTimeDisplay = document.getElementById('time-display');
+            if (elTimeDisplay) {
+                const mins = Math.floor(tempsRestant / 60);
+                const secs = Math.max(0, tempsRestant % 60);
+                elTimeDisplay.textContent = String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0');
+            }
+            try { mettreAJourBarreProgres(); } catch(e) {}
             
             if (tempsRestant <= 0) {
                 minuteurTermine();
@@ -441,24 +486,40 @@ function pauserMinuteur() {
     if (minuteurEnCours) {
         minuteurEnCours = false;
         clearInterval(intervalleMinuteur);
+        console.debug('pauserMinuteur: paused at tempsDebut=', tempsDebut);
         mettreAJourControlesMinuteur();
     }
 }
 
 function arreterMinuteur() {
+    // If a work session was started and is stopped manually, record the elapsed time as interrupted
+    if (phaseActuelle === 'work' && tempsDebut && tempsDebut > 0) {
+        const secondesEcoulees = Math.max(0, Math.floor((Date.now() - tempsDebut) / 1000));
+        // Count full minutes only (0 if <60s)
+        const minutesEcoulees = Math.floor(secondesEcoulees / 60);
+        console.debug('arreterMinuteur: secs=', secondesEcoulees, 'mins=', minutesEcoulees);
+        if (minutesEcoulees > 0) {
+            ajouterSessionEtudeInterrompue(minutesEcoulees);
+            const msg = messagesInterface.sessionInterrompue.replace('{temps}', minutesEcoulees);
+            afficherNotification(msg, 'info');
+            verifierSucces();
+        }
+    }
     minuteurEnCours = false;
     clearInterval(intervalleMinuteur);
     reinitialiserMinuteur();
+    // ensure tempsDebut reset
+    tempsDebut = 0;
     mettreAJourControlesMinuteur();
     mettreAJourAffichageMinuteur();
     mettreAJourBarreProgres();
 }
 
 function passerMinuteur() {
-    const secondesEcoulees = Math.max(0, tempsTotal - tempsRestant);
-    const tempsEcouleMin = Math.floor(secondesEcoulees / 60);
-
+    // compute real elapsed seconds since start
+    const secondesEcoulees = Math.max(0, Math.floor((Date.now() - (tempsDebut || Date.now())) / 1000));
     if (phaseActuelle === 'work') {
+        const tempsEcouleMin = Math.floor(secondesEcoulees / 60);
         if (tempsEcouleMin > 0) {
             ajouterSessionEtudeInterrompue(tempsEcouleMin);
             const message = messagesInterface.sessionInterrompue.replace('{temps}', tempsEcouleMin);
@@ -482,7 +543,8 @@ function reinitialiserMinuteur() {
     tempsRestant = config.tempsTravail * 60;
     tempsTotal = config.tempsTravail * 60;
     tempsDebut = 0;
-    document.getElementById('timer-session').textContent = 'Travail';
+    const elTimerSession = document.getElementById('timer-session');
+    if (elTimerSession) elTimerSession.textContent = 'Travail';
 }
 
 function minuteurTermine() {
@@ -492,7 +554,13 @@ function minuteurTermine() {
     jouerSon('complete');
     
     if (phaseActuelle === 'work') {
-        const tempsSession = Math.floor(tempsTotal / 60);
+        // Calculate real elapsed minutes from tempsDebut if available
+        const secondesEcoulees = Math.max(0, Math.floor((Date.now() - (tempsDebut || Date.now())) / 1000));
+        let tempsSession = Math.floor(secondesEcoulees / 60);
+        if (tempsSession <= 0) {
+            tempsSession = Math.floor(tempsTotal / 60);
+        }
+        console.debug('minuteurTermine: secondesEcoulees=', secondesEcoulees, 'tempsSession=', tempsSession);
         ajouterSessionEtude(tempsSession);
         verifierSucces();
         
@@ -508,6 +576,25 @@ function minuteurTermine() {
     mettreAJourControlesMinuteur();
     mettreAJourAffichageMinuteur();
     mettreAJourBarreProgres();
+    tempsDebut = 0;
+}
+
+// Update the progress fill and time display safely
+function mettreAJourBarreProgres() {
+    const progress = document.getElementById('progress-fill');
+    const timeDisplay = document.getElementById('time-display');
+    // Avoid division by zero
+    const total = Math.max(1, tempsTotal);
+    const remaining = Math.max(0, tempsRestant);
+    const percent = Math.max(0, Math.min(100, Math.round(((total - remaining) / total) * 100)));
+    if (progress) {
+        progress.style.width = percent + '%';
+    }
+    if (timeDisplay) {
+        const mins = Math.floor(remaining / 60);
+        const secs = Math.max(0, remaining % 60);
+        timeDisplay.textContent = String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0');
+    }
 }
 
 function passerAPhasesuivante() {
@@ -518,20 +605,23 @@ function passerAPhasesuivante() {
             phaseActuelle = 'longBreak';
             tempsRestant = config.pauseLongue * 60;
             tempsTotal = config.pauseLongue * 60;
-            document.getElementById('timer-session').textContent = 'Pause Longue';
+            const elTimerSession = document.getElementById('timer-session');
+            if (elTimerSession) elTimerSession.textContent = 'Pause Longue';
             cycleActuel = 1;
         } else {
             phaseActuelle = 'shortBreak';
             tempsRestant = config.pauseCourte * 60;
             tempsTotal = config.pauseCourte * 60;
-            document.getElementById('timer-session').textContent = 'Pause Courte';
+            const elTimerSession2 = document.getElementById('timer-session');
+            if (elTimerSession2) elTimerSession2.textContent = 'Pause Courte';
         }
         afficherNotification(messagesInterface.pauseRecommandee, 'info');
     } else {
         phaseActuelle = 'work';
         tempsRestant = config.tempsTravail * 60;
         tempsTotal = config.tempsTravail * 60;
-        document.getElementById('timer-session').textContent = 'Travail';
+        const elTimerSession3 = document.getElementById('timer-session');
+        if (elTimerSession3) elTimerSession3.textContent = 'Travail';
         if (phaseActuelle!== 'longBreak') {
             cycleActuel++;
         }
@@ -562,54 +652,94 @@ function mettreAJourAffichageTypeMinuteur() {
         sprint: 'Sprint Rapide',
         custom: 'Personnalisé'
     };
-    
-    document.getElementById('current-timer-type').textContent = nomsTypes[typeMinuteurActuel];
+    const elType = document.getElementById('current-timer-type');
+    if (elType) elType.textContent = nomsTypes[typeMinuteurActuel];
+}
+
+// Safe update of timer control buttons (start/pause/stop/skip)
+function mettreAJourControlesMinuteur() {
+    const btnStart = document.getElementById('start-btn');
+    const btnPause = document.getElementById('pause-btn');
+    const btnStop = document.getElementById('stop-btn');
+    const btnSkip = document.getElementById('skip-btn');
+
+    // If elements are missing (different screens), just skip
+    if (btnStart) {
+        btnStart.disabled = !!minuteurEnCours;
+        btnStart.textContent = minuteurEnCours ? 'En cours' : 'Démarrer';
+    }
+    if (btnPause) {
+        btnPause.disabled = !minuteurEnCours;
+        btnPause.textContent = minuteurEnCours ? 'Pause' : 'Reprendre';
+    }
+    if (btnStop) {
+        // stop is enabled when a session was started (tempsDebut set) or the timer is running
+        btnStop.disabled = !minuteurEnCours && !tempsDebut;
+        if (!btnStop.disabled) btnStop.textContent = 'Arrêter';
+    }
+    if (btnSkip) {
+        // skip can be available even when not running (to move phases)
+        btnSkip.disabled = false;
+        if (btnSkip) btnSkip.textContent = 'Passer';
+    }
 }
 
 function mettreAJourAffichageMinuteur() {
-    const minutes = Math.floor(tempsRestant / 60);
-    const secondes = tempsRestant % 60;
-    const affichage = `${minutes.toString().padStart(2, '0')}:${secondes.toString().padStart(2, '0')}`;
-    document.getElementById('time-display').textContent = affichage;
-}
-
-function mettreAJourBarreProgres() {
-    const progres = ((tempsTotal - tempsRestant) / tempsTotal) * 100;
-    document.getElementById('progress-fill').style.width = progres + '%';
-}
-
-function mettreAJourControlesMinuteur() {
-    const boutonDemarrer = document.getElementById('start-btn');
-    const boutonPause = document.getElementById('pause-btn');
-    
-    if (minuteurEnCours) {
-        boutonDemarrer.classList.add('hidden');
-        boutonPause.classList.remove('hidden');
-    } else {
-        boutonDemarrer.classList.remove('hidden');
-        boutonPause.classList.add('hidden');
-    }
-}
-
-// Nouvelles fonctions des statistiques avec gestion des sessions interrompues
-function ajouterSessionEtude(minutes) {
     if (!utilisateurActuel) return;
-    
-    utilisateurActuel.tempsEtudeTotale += minutes;
-    utilisateurActuel.tempsPrevu += minutes;
-    utilisateurActuel.sessionsCompletees++;
-    
+
+    // Defensive DOM writes: get elements and set only if present
+    const elCurrentUsername = document.getElementById('current-username');
+    const elUserLevel = document.getElementById('user-level');
+    const elUserPoints = document.getElementById('user-points');
+    const elCurrentStreak = document.getElementById('current-streak');
+    const elSessionsCompletes = document.getElementById('sessions-completes');
+    const elCompletionRate = document.getElementById('completion-rate');
+
+    if (elCurrentUsername) elCurrentUsername.textContent = utilisateurActuel.nomUtilisateur;
+    if (elUserLevel) elUserLevel.textContent = utilisateurActuel.niveau;
+    if (elUserPoints) elUserPoints.textContent = utilisateurActuel.pointsTotaux;
+    if (elCurrentStreak) elCurrentStreak.textContent = utilisateurActuel.serieActuelle;
+    if (elSessionsCompletes) elSessionsCompletes.textContent = utilisateurActuel.sessionsCompletees;
+    if (elCompletionRate) elCompletionRate.textContent = utilisateurActuel.tauxCompletion;
+
     const aujourdhui = new Date().toDateString();
-    if (!utilisateurActuel.statistiquesQuotidiennes[aujourdhui]) {
-        utilisateurActuel.statistiquesQuotidiennes[aujourdhui] = 0;
-    }
-    utilisateurActuel.statistiquesQuotidiennes[aujourdhui] += minutes;
-    
-    const points = minutes * 2;
-    ajouterPoints(points);
+    const minutesAujourdhui = utilisateurActuel.statistiquesQuotidiennes[aujourdhui] || 0;
+    const elTodayTime = document.getElementById('today-time');
+    if (elTodayTime) elTodayTime.textContent = minutesAujourdhui;
+
+    // Mettre à jour les nouvelles statistiques (guarded)
+    const completeSessionsEl = document.getElementById('complete-sessions');
+    const interruptedSessionsEl = document.getElementById('interrupted-sessions');
+    const realTimeEl = document.getElementById('real-time');
+    const plannedTimeEl = document.getElementById('planned-time');
+    const completeSessionsElAlt = document.getElementById('sessions-completed');
+    const completeSessionsElAlt2 = document.getElementById('sessions-completes');
+    const interruptedSessionsElAlt = document.getElementById('interrupted-sessions');
+
+    if (completeSessionsEl) completeSessionsEl.textContent = utilisateurActuel.sessionsCompletees;
+    if (completeSessionsElAlt) completeSessionsElAlt.textContent = utilisateurActuel.sessionsCompletees;
+    if (completeSessionsElAlt2) completeSessionsElAlt2.textContent = utilisateurActuel.sessionsCompletees;
+    if (interruptedSessionsEl) interruptedSessionsEl.textContent = utilisateurActuel.sessionsInterrompues;
+    if (interruptedSessionsElAlt) interruptedSessionsElAlt.textContent = utilisateurActuel.sessionsInterrompues;
+    if (realTimeEl) realTimeEl.textContent = utilisateurActuel.tempsEtudeTotale;
+    if (plannedTimeEl) plannedTimeEl.textContent = utilisateurActuel.tempsPrevu;
+
+    rendreSuccesRecents();
+    // Update statistics panel to reflect currently displayed user
+    afficherStatsUtilisateur(utilisateurAffiche || utilisateurActuel);
+    // Update top-left total time and pink username
+    const topTotal = document.getElementById('top-total-time');
+    const topPink = document.getElementById('top-username-pink');
+    if (topTotal) topTotal.textContent = (utilisateurActuel.tempsEtudeTotale || 0) + ' min';
+    if (topPink) topPink.textContent = utilisateurActuel.nomUtilisateur;
     
     calculerTauxCompletion();
     mettreAJourInterfaceUtilisateur();
+    // ensure top bar and global list reflect the change
+    mettreAJourTopBar();
+    // direct DOM updates to be defensive
+    try { document.getElementById('today-time').textContent = utilisateurActuel.statistiquesQuotidiennes[new Date().toDateString()] || 0; } catch(e){}
+    try { document.getElementById('top-total-time').textContent = (utilisateurActuel.tempsEtudeTotale || 0) + ' min'; } catch(e){}
 }
 
 function ajouterSessionEtudeInterrompue(minutes) {
@@ -628,6 +758,11 @@ function ajouterSessionEtudeInterrompue(minutes) {
     ajouterPoints(points);
     calculerTauxCompletion();
     mettreAJourInterfaceUtilisateur();
+    // update top bar
+    mettreAJourTopBar();
+    // direct DOM updates to be defensive
+    try { document.getElementById('today-time').textContent = utilisateurActuel.statistiquesQuotidiennes[new Date().toDateString()] || 0; } catch(e){}
+    try { document.getElementById('top-total-time').textContent = (utilisateurActuel.tempsEtudeTotale || 0) + ' min'; } catch(e){}
 }
 
 function calculerTauxCompletion() {
@@ -649,6 +784,9 @@ function ajouterPoints(points) {
     if (utilisateurGlobal) {
         utilisateurGlobal.points = utilisateurActuel.pointsTotaux;
         utilisateurGlobal.ligue = obtenirLigueUtilisateur(utilisateurActuel.pointsTotaux);
+        // Keep time fields synchronized as well
+        utilisateurGlobal.tempsEtudeTotale = utilisateurActuel.tempsEtudeTotale;
+        utilisateurGlobal.tempsPrevu = utilisateurActuel.tempsPrevu;
     }
     
     const nouveauNiveau = Math.floor(utilisateurActuel.pointsTotaux / 100) + 1;
@@ -656,6 +794,9 @@ function ajouterPoints(points) {
         utilisateurActuel.niveau = nouveauNiveau;
         afficherNotification(`Félicitations! Vous avez atteint le niveau ${nouveauNiveau}!`, 'success');
     }
+    // update UI including top bar after points change
+    mettreAJourInterfaceUtilisateur();
+    mettreAJourTopBar();
 }
 
 function obtenirLigueUtilisateur(points) {
@@ -669,30 +810,53 @@ function obtenirLigueUtilisateur(points) {
 
 function mettreAJourInterfaceUtilisateur() {
     if (!utilisateurActuel) return;
-    
-    document.getElementById('current-username').textContent = utilisateurActuel.nomUtilisateur;
-    document.getElementById('user-level').textContent = utilisateurActuel.niveau;
-    document.getElementById('user-points').textContent = utilisateurActuel.pointsTotaux;
-    document.getElementById('current-streak').textContent = utilisateurActuel.serieActuelle;
-    document.getElementById('sessions-completes').textContent = utilisateurActuel.sessionsCompletees;
-    document.getElementById('completion-rate').textContent = utilisateurActuel.tauxCompletion;
-    
+    // Defensive updates for many possible DOM IDs (some screens don't include all elements)
+    const elCurrentUsername = document.getElementById('current-username');
+    const elUserLevel = document.getElementById('user-level');
+    const elUserPoints = document.getElementById('user-points');
+    const elCurrentStreak = document.getElementById('current-streak');
+    const elSessionsCompletes = document.getElementById('sessions-completes');
+    const elCompletionRate = document.getElementById('completion-rate');
+
+    if (elCurrentUsername) elCurrentUsername.textContent = utilisateurActuel.nomUtilisateur;
+    if (elUserLevel) elUserLevel.textContent = utilisateurActuel.niveau;
+    if (elUserPoints) elUserPoints.textContent = utilisateurActuel.pointsTotaux;
+    if (elCurrentStreak) elCurrentStreak.textContent = utilisateurActuel.serieActuelle;
+    if (elSessionsCompletes) elSessionsCompletes.textContent = utilisateurActuel.sessionsCompletees;
+    if (elCompletionRate) elCompletionRate.textContent = utilisateurActuel.tauxCompletion;
+
     const aujourdhui = new Date().toDateString();
-    const minutesAujourdhui = utilisateurActuel.statistiquesQuotidiennes[aujourdhui] || 0;
-    document.getElementById('today-time').textContent = minutesAujourdhui;
-    
-    // Mettre à jour les nouvelles statistiques
+    const minutesAujourdhui = utilisateurActuel.statistiquesQuotidiennes ? (utilisateurActuel.statistiquesQuotidiennes[aujourdhui] || 0) : 0;
+    const elTodayTime = document.getElementById('today-time');
+    if (elTodayTime) elTodayTime.textContent = minutesAujourdhui;
+
+    // Mettre à jour les nouvelles statistiques (guarded)
     const completeSessionsEl = document.getElementById('complete-sessions');
     const interruptedSessionsEl = document.getElementById('interrupted-sessions');
     const realTimeEl = document.getElementById('real-time');
     const plannedTimeEl = document.getElementById('planned-time');
-    
+    const completeSessionsElAlt = document.getElementById('sessions-completed');
+    const completeSessionsElAlt2 = document.getElementById('sessions-completes');
+    const interruptedSessionsElAlt = document.getElementById('interrupted-sessions');
+
     if (completeSessionsEl) completeSessionsEl.textContent = utilisateurActuel.sessionsCompletees;
+    if (completeSessionsElAlt) completeSessionsElAlt.textContent = utilisateurActuel.sessionsCompletees;
+    if (completeSessionsElAlt2) completeSessionsElAlt2.textContent = utilisateurActuel.sessionsCompletees;
     if (interruptedSessionsEl) interruptedSessionsEl.textContent = utilisateurActuel.sessionsInterrompues;
+    if (interruptedSessionsElAlt) interruptedSessionsElAlt.textContent = utilisateurActuel.sessionsInterrompues;
     if (realTimeEl) realTimeEl.textContent = utilisateurActuel.tempsEtudeTotale;
     if (plannedTimeEl) plannedTimeEl.textContent = utilisateurActuel.tempsPrevu;
-    
+
     rendreSuccesRecents();
+    afficherStatsUtilisateur(utilisateurAffiche || utilisateurActuel);
+
+    const topTotal = document.getElementById('top-total-time');
+    const topPink = document.getElementById('top-username-pink');
+    if (topTotal) topTotal.textContent = (utilisateurActuel.tempsEtudeTotale || 0) + ' min';
+    if (topPink) topPink.textContent = utilisateurActuel.nomUtilisateur;
+
+    // refresh friends list badges if friends panel exists
+    try { rendreAmis(); } catch(e) {}
 }
 
 function rendreSuccesRecents() {
@@ -718,10 +882,51 @@ function rendreSuccesRecents() {
 
 // Fonctions des statistiques avancées avec nouveau graphique de complétion
 function rendreStatistiquesAvancees() {
+    // Render statistics for the user currently displayed (utilisateurAffiche) or the current user
+    if (!utilisateurAffiche) utilisateurAffiche = utilisateurActuel;
     rendreGraphiqueEfficaciteHebdomadaire();
     rendreGraphiqueCompletion();
     rendreGraphiqueCategories();
     rendreGraphiqueCorrelation();
+    // Update stats header info
+    const statsPhoto = document.getElementById('stats-owner-photo');
+    const statsName = document.getElementById('stats-owner-name');
+    const statsMeta = document.getElementById('stats-owner-meta');
+    if (utilisateurAffiche) {
+        if (statsPhoto) statsPhoto.src = utilisateurAffiche.photo || (utilisateurs.get(utilisateurAffiche.nomUtilisateur) && utilisateurs.get(utilisateurAffiche.nomUtilisateur).photo) || DATA_URI_PLACEHOLDER;
+        if (statsName) statsName.textContent = utilisateurAffiche.nomUtilisateur;
+        if (statsMeta) statsMeta.textContent = utilisateurAffiche === utilisateurActuel ? 'Sélection: vous' : 'Sélection: ami';
+        // Summary metrics
+        const summaryTotal = document.getElementById('summary-total');
+        const summaryAvg = document.getElementById('summary-avg');
+        const summaryStreak = document.getElementById('summary-streak');
+        const summaryEff = document.getElementById('summary-eff');
+        if (summaryTotal) summaryTotal.textContent = utilisateurAffiche.tempsEtudeTotale || 0;
+        if (summaryAvg) summaryAvg.textContent = Math.round(((utilisateurAffiche.tempsEtudeTotale || 0) / 7));
+        if (summaryStreak) summaryStreak.textContent = utilisateurAffiche.serieActuelle || 0;
+        if (summaryEff) summaryEff.textContent = (utilisateurAffiche.tauxCompletion || 0) + '%';
+    }
+}
+
+function afficherStatsUtilisateur(user) {
+    // Fill the stats summary area (complete/interrupted/real/planned) for the selected user
+    const completeEl = document.getElementById('complete-sessions');
+    const interruptedEl = document.getElementById('interrupted-sessions');
+    const realEl = document.getElementById('real-time');
+    const plannedEl = document.getElementById('planned-time');
+
+    if (!user) {
+        if (completeEl) completeEl.textContent = '0';
+        if (interruptedEl) interruptedEl.textContent = '0';
+        if (realEl) realEl.textContent = '0';
+        if (plannedEl) plannedEl.textContent = '0';
+        return;
+    }
+
+    if (completeEl) completeEl.textContent = user.sessionsCompletees || 0;
+    if (interruptedEl) interruptedEl.textContent = user.sessionsInterrompues || 0;
+    if (realEl) realEl.textContent = user.tempsEtudeTotale || 0;
+    if (plannedEl) plannedEl.textContent = user.tempsPrevu || 0;
 }
 
 function rendreGraphiqueEfficaciteHebdomadaire() {
@@ -743,7 +948,7 @@ function rendreGraphiqueEfficaciteHebdomadaire() {
         const nomJour = date.toLocaleDateString('fr', { weekday: 'short' });
         
         etiquettes.push(nomJour);
-        donneesHebdomadaires.push(utilisateurActuel.statistiquesQuotidiennes[dateStr] || 0);
+        donneesHebdomadaires.push((utilisateurAffiche && utilisateurAffiche.statistiquesQuotidiennes && utilisateurAffiche.statistiquesQuotidiennes[dateStr]) || 0);
     }
     
     graphiques.graphiqueHebdomadaire = new Chart(ctx, {
@@ -789,8 +994,8 @@ function rendreGraphiqueCompletion() {
         graphiques.graphiqueCompletion.destroy();
     }
     
-    const sessionsCompletes = utilisateurActuel.sessionsCompletees;
-    const sessionsInterrompues = utilisateurActuel.sessionsInterrompues;
+    const sessionsCompletes = (utilisateurAffiche && utilisateurAffiche.sessionsCompletees) || 0;
+    const sessionsInterrompues = (utilisateurAffiche && utilisateurAffiche.sessionsInterrompues) || 0;
     
     graphiques.graphiqueCompletion = new Chart(ctx, {
         type: 'doughnut',
@@ -893,13 +1098,32 @@ function rendreGraphiqueCorrelation() {
 // Fonctions des tournois
 function rendreTournois() {
     document.getElementById('weekly-t-name').textContent = tournois.tournoiHebdomadaire.nom;
-    document.getElementById('bracket-container').innerHTML = '<p>Les participants seront affichés après inscription</p>';
+    // Render participants and simple ranking by study time
+    const participants = utilisateursGlobaux.filter(u => u.participeTournoi);
+    if (participants.length === 0) {
+        document.getElementById('bracket-container').innerHTML = '<p>Les participants seront affichés après inscription</p>';
+        return;
+    }
+    // Sort by tempsEtudeTotale desc
+    participants.sort((a, b) => (b.tempsEtudeTotale || 0) - (a.tempsEtudeTotale || 0));
+    const html = participants.map((p, i) => `<div style="padding:8px;border-bottom:1px solid var(--y2k-border);display:flex;align-items:center;gap:8px;"><span style="width:28px;text-align:center;">${i+1}</span><span style="width:36px;height:36px;overflow:hidden;border-radius:6px;"><img src="${p.photo || DATA_URI_PLACEHOLDER}" style="width:100%;height:100%;object-fit:cover;"/></span><strong>${p.nomUtilisateur}</strong><span style="margin-left:auto;color:var(--y2k-text-secondary);">${p.tempsEtudeTotale || 0} min</span></div>`).join('');
+    document.getElementById('bracket-container').innerHTML = html;
 }
 
 function inscrirePourTournoi() {
+    if (!utilisateurActuel) { afficherNotification('Connectez-vous d\'abord', 'error'); return; }
+    // mark in global list
+    let globalEntry = utilisateursGlobaux.find(u => u.nomUtilisateur === utilisateurActuel.nomUtilisateur);
+    if (!globalEntry) {
+        globalEntry = { nomUtilisateur: utilisateurActuel.nomUtilisateur, points: utilisateurActuel.pointsTotaux || 0, ligue: obtenirLigueUtilisateur(utilisateurActuel.pointsTotaux || 0), etudes: utilisateurActuel.etudes || '', tempsEtudeTotale: utilisateurActuel.tempsEtudeTotale || 0 };
+        utilisateursGlobaux.push(globalEntry);
+    }
+    globalEntry.participeTournoi = true;
     afficherNotification('Vous êtes inscrit au tournoi!', 'success');
     document.getElementById('register-weekly').textContent = 'Inscrit';
     document.getElementById('register-weekly').disabled = true;
+    // re-render
+    rendreTournois();
 }
 
 // Fonctions des classements
@@ -909,15 +1133,18 @@ function rendreClassements() {
     
     tbody.innerHTML = '';
     
-    // Tri par points
-    const utilisateursTries = [...utilisateursGlobaux].sort((a, b) => b.points - a.points);
-    
+    // Tri par temps d'étude réel (tempsEtudeTotale)
+    const utilisateursTries = [...utilisateursGlobaux].sort((a, b) => (b.tempsEtudeTotale || 0) - (a.tempsEtudeTotale || 0));
+
     utilisateursTries.forEach((utilisateur, index) => {
         const rangee = document.createElement('tr');
+        // Use avatar if available (utilisateur.photo) otherwise look for photo in users map
+    const photoSrc = utilisateur.photo || (utilisateurs.get(utilisateur.nomUtilisateur) && utilisateurs.get(utilisateur.nomUtilisateur).photo) || DATA_URI_PLACEHOLDER;
         rangee.innerHTML = `
             <td>${index + 1}</td>
+            <td><span class="leaderboard-avatar"><img src="${photoSrc}" alt="avatar"></span></td>
             <td>${utilisateur.nomUtilisateur}</td>
-            <td>${utilisateur.points}</td>
+            <td>${utilisateur.tempsEtudeTotale || 0} min</td>
             <td>${utilisateur.ligue}</td>
             <td>${utilisateur.etudes}</td>
         `;
@@ -939,14 +1166,84 @@ function rendreAmis() {
     } else {
         utilisateurActuel.amis.forEach(nomAmi => {
             const divAmi = document.createElement('div');
+            divAmi.className = 'friend-item';
             divAmi.style.cssText = 'padding: 8px; margin: 4px 0; background: var(--y2k-surface-light); border-radius: 4px; font-size: 10px;';
-            divAmi.innerHTML = `👤 ${nomAmi} - En ligne`;
+            // Find friend in global users to get avatar
+            const friendGlobal = utilisateursGlobaux.find(u => u.nomUtilisateur === nomAmi) || {};
+            const friendPhoto = friendGlobal.photo || (utilisateurs.get(nomAmi) && utilisateurs.get(nomAmi).photo) || DATA_URI_PLACEHOLDER;
+            // Determine online state (use friendGlobal.online if available, otherwise default to false)
+            const isOnline = friendGlobal.online === undefined ? false : !!friendGlobal.online;
+            // compute unread count for this friend for current user
+            const lastRead = loadLastRead(utilisateurActuel ? utilisateurActuel.nomUtilisateur : null) || {};
+            const convo = loadConversation(utilisateurActuel ? utilisateurActuel.nomUtilisateur : null, nomAmi) || [];
+            const unreadCount = convo.filter(m => m.sender === nomAmi && (!lastRead[getConversationKey(m.sender, m.receiver)] || new Date(m.time) > new Date(lastRead[getConversationKey(m.sender, m.receiver)]))).length;
+            divAmi.innerHTML = `
+                <span class="friend-avatar"><img src="${friendPhoto}" alt="avatar"></span>
+                <span class="friend-name ${isOnline ? 'online' : 'offline'}">${nomAmi}</span>
+                <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
+                    <button class="view-stats-btn pixel-btn secondary-btn" data-user="${nomAmi}">Voir stats</button>
+                    <button class="msg-btn pixel-btn">Message</button>
+                    ${unreadCount > 0 ? `<span class="friend-unread-badge">${unreadCount}</span>` : ''}
+                </div>
+            `;
+            // clicking a friend will display their statistics
+            // clicking name area shows stats as before
+            divAmi.addEventListener('click', (e) => {
+                if (e.target && e.target.classList && (e.target.classList.contains('msg-btn') || e.target.classList.contains('view-stats-btn'))) return;
+                const userObj = utilisateurs.get(nomAmi) || utilisateursGlobaux.find(u => u.nomUtilisateur === nomAmi);
+                if (userObj) {
+                    utilisateurAffiche = userObj;
+                    afficherStatsUtilisateur(utilisateurAffiche);
+                    rendreStatistiquesAvancees();
+                    const statsBtn = document.querySelector('[data-tab="statistics"]');
+                    if (statsBtn) statsBtn.click();
+                }
+            });
+            // Attach message button handler
             listeAmis.appendChild(divAmi);
+            const msgBtn = divAmi.querySelector('.msg-btn');
+            if (msgBtn) {
+                msgBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    ouvrirChatAvec(nomAmi);
+                });
+            }
+            const viewStatsBtn = divAmi.querySelector('.view-stats-btn');
+            if (viewStatsBtn) {
+                viewStatsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const userObj = utilisateurs.get(nomAmi) || utilisateursGlobaux.find(u => u.nomUtilisateur === nomAmi);
+                    if (userObj) {
+                        utilisateurAffiche = userObj;
+                        afficherStatsUtilisateur(utilisateurAffiche);
+                        rendreStatistiquesAvancees();
+                        const statsBtn = document.querySelector('[data-tab="statistics"]');
+                        if (statsBtn) statsBtn.click();
+                    }
+                });
+            }
         });
     }
     
     if (serieGroupe) {
-        serieGroupe.innerHTML = '<h4>Série de groupe : 3 jours</h4><p>Vous et vos amis étudiez ensemble depuis 3 jours consécutifs!</p>';
+        // Compute a real group streak: the minimum consecutive days among the user and their friends
+        if (!utilisateurActuel.amis || utilisateurActuel.amis.length === 0) {
+            serieGroupe.innerHTML = '<p>Aucun groupe pour l\'instant — ajoutez des amis pour commencer une série de groupe.</p>';
+        } else {
+            const series = [];
+            // include current user
+            series.push(Number(utilisateurActuel.serieActuelle) || 0);
+            utilisateurActuel.amis.forEach(nomAmi => {
+                const u = utilisateurs.get(nomAmi) || utilisateursGlobaux.find(x => x.nomUtilisateur === nomAmi) || {};
+                series.push(Number(u.serieActuelle) || 0);
+            });
+            const groupStreak = Math.min(...series);
+            if (groupStreak > 0) {
+                serieGroupe.innerHTML = `<h4>Série de groupe : ${groupStreak} jour${groupStreak>1? 's':''}</h4><p>Votre groupe étudie ensemble depuis ${groupStreak} jours consécutifs.</p>`;
+            } else {
+                serieGroupe.innerHTML = '<p>Pas encore de série de groupe active. Étudiez quelques jours avec vos amis pour déclencher une série.</p>';
+            }
+        }
     }
 }
 
@@ -982,6 +1279,178 @@ function ajouterAmi(e) {
     rendreAmis();
     verifierSucces();
     afficherNotification(`${nomUtilisateurAmi} ajouté aux amis!`, 'success');
+    // For demo, mark friend as offline by default (unless they exist with state)
+    let friendGlobal = utilisateursGlobaux.find(u => u.nomUtilisateur === nomUtilisateurAmi);
+    if (!friendGlobal) {
+        utilisateursGlobaux.push({ nomUtilisateur: nomUtilisateurAmi, points: 0, ligue: 'Bronze', etudes: '', tempsEtudeTotale: 0, online: false });
+    }
+}
+
+// Chat functions
+function ouvrirChatAvec(nomAmi) {
+    const panel = document.getElementById('chat-panel');
+    const chatWith = document.getElementById('chat-with');
+    const messages = document.getElementById('chat-messages');
+    if (!panel || !chatWith || !messages) return;
+
+    if (!utilisateurActuel) {
+        afficherNotification('Connectez-vous pour envoyer des messages', 'error');
+        return;
+    }
+
+    chatWith.textContent = `Message: ${nomAmi}`;
+    panel.classList.remove('hidden');
+
+    // Close handler
+    document.getElementById('close-chat').onclick = () => panel.classList.add('hidden');
+
+    // Load conversation from localStorage (shared between both users)
+    const convo = loadConversation(utilisateurActuel.nomUtilisateur, nomAmi);
+    renderConversation(convo, messages);
+
+    // After rendering, mark conversation as read for current user
+    const lastReadObj = loadLastRead(utilisateurActuel.nomUtilisateur) || {};
+    lastReadObj[getConversationKey(utilisateurActuel.nomUtilisateur, nomAmi)] = new Date().toISOString();
+    saveLastRead(utilisateurActuel.nomUtilisateur, lastReadObj);
+    // re-render friends list to hide badge
+    rendreAmis();
+
+    // Ensure send handler is attached (replace previous handler)
+    const send = document.getElementById('chat-send');
+    send.onclick = () => {
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const message = {
+            sender: utilisateurActuel.nomUtilisateur,
+            receiver: nomAmi,
+            text: text,
+            time: new Date().toISOString()
+        };
+
+        convo.push(message);
+        saveConversation(utilisateurActuel.nomUtilisateur, nomAmi, convo);
+        renderConversation(convo, messages);
+        input.value = '';
+        messages.scrollTop = messages.scrollHeight;
+        // mark as read for sender (since they see it)
+        const lastReadObj2 = loadLastRead(utilisateurActuel.nomUtilisateur) || {};
+        lastReadObj2[getConversationKey(utilisateurActuel.nomUtilisateur, nomAmi)] = new Date().toISOString();
+        saveLastRead(utilisateurActuel.nomUtilisateur, lastReadObj2);
+        // update friends badges
+        rendreAmis();
+    };
+}
+
+// Conversation storage helpers (localStorage)
+function getConversationKey(a, b) {
+    const ids = [String(a || ''), String(b || '')].map(s => s.toLowerCase()).sort();
+    return `chat:${ids[0]}:${ids[1]}`;
+}
+
+function loadConversation(a, b) {
+    try {
+        const key = getConversationKey(a, b);
+        const raw = localStorage.getItem(key);
+        if (!raw) return [];
+        return JSON.parse(raw);
+    } catch (e) {
+        console.error('Erreur loadConversation', e);
+        return [];
+    }
+}
+
+function saveConversation(a, b, messages) {
+    try {
+        const key = getConversationKey(a, b);
+        localStorage.setItem(key, JSON.stringify(messages));
+    } catch (e) {
+        console.error('Erreur saveConversation', e);
+    }
+}
+
+function renderConversation(messagesArray, container) {
+    container.innerHTML = '';
+    if (!messagesArray || messagesArray.length === 0) {
+        const p = document.createElement('div');
+        p.className = 'chat-empty';
+        p.textContent = 'Aucun message — commencez la conversation.';
+        container.appendChild(p);
+        return;
+    }
+
+    messagesArray.forEach(m => {
+        const row = document.createElement('div');
+        row.className = 'chat-message-row';
+
+        const img = document.createElement('img');
+        img.src = getUserPhoto(m.sender) || DATA_URI_PLACEHOLDER;
+        img.alt = m.sender;
+        img.style.width = '36px';
+        img.style.height = '36px';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '6px';
+
+        const bubble = document.createElement('div');
+        const time = new Date(m.time).toLocaleString();
+        const isMe = m.sender === utilisateurActuel.nomUtilisateur;
+        bubble.className = 'chat-bubble ' + (isMe ? 'me' : 'other');
+        bubble.innerHTML = `<div style="font-weight:600">${isMe? 'Vous' : escapeHtml(m.sender)} <span class='chat-meta'>${time}</span></div><div>${escapeHtml(m.text)}</div>`;
+
+        if (isMe) {
+            // append bubble then avatar (right aligned)
+            row.appendChild(bubble);
+            row.appendChild(img);
+        } else {
+            row.appendChild(img);
+            row.appendChild(bubble);
+        }
+
+        container.appendChild(row);
+    });
+
+
+function getUserPhoto(nom) {
+    if (!nom) return DATA_URI_PLACEHOLDER;
+    const global = utilisateursGlobaux.find(u => u.nomUtilisateur === nom);
+    if (global && global.photo) return global.photo;
+    const local = utilisateurs.get(nom);
+    if (local && local.photo) return local.photo;
+    return DATA_URI_PLACEHOLDER;
+}
+
+function escapeHtml(unsafe) {
+    return String(unsafe).replace(/[&<"'>]/g, function(m) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[m]; });
+}
+    // (rendering done above)
+}
+
+// Ensure top-left display is always updated from the active user
+function mettreAJourTopBar() {
+    const topTotal = document.getElementById('top-total-time');
+    const topPink = document.getElementById('top-username-pink');
+    const topPhoto = document.getElementById('top-user-photo');
+    const rankEl = document.getElementById('user-rank');
+
+    if (!utilisateurActuel) {
+        if (topTotal) topTotal.textContent = '0 min';
+        if (topPink) topPink.textContent = '—';
+        if (topPhoto) topPhoto.src = DATA_URI_PLACEHOLDER;
+        if (rankEl) rankEl.textContent = '—';
+        return;
+    }
+
+    if (topTotal) topTotal.textContent = (utilisateurActuel.tempsEtudeTotale || 0) + ' min';
+    if (topPink) topPink.textContent = utilisateurActuel.nomUtilisateur;
+    if (topPhoto) topPhoto.src = utilisateurActuel.photo || DATA_URI_PLACEHOLDER;
+
+    // Compute rank by sorting global users by study time
+    if (rankEl && utilisateursGlobaux && utilisateursGlobaux.length > 0) {
+        const sorted = [...utilisateursGlobaux].sort((a, b) => (b.tempsEtudeTotale || 0) - (a.tempsEtudeTotale || 0));
+        const idx = sorted.findIndex(u => u.nomUtilisateur === utilisateurActuel.nomUtilisateur);
+        rankEl.textContent = idx >= 0 ? (idx + 1) : '—';
+    }
 }
 
 // Fonctions de synchronisation GitHub avec nouveau système de sécurité
@@ -1209,14 +1678,17 @@ function mettreAJourInterfaceProfil() {
     if (!utilisateurActuel) return;
     document.getElementById('profile-username').textContent = utilisateurActuel.nomUtilisateur;
     document.getElementById('profile-level').textContent = utilisateurActuel.niveau;
-    document.getElementById('profile-points').textContent = utilisateurActuel.pointsTotaux;
+    document.getElementById('profile-points').textContent = utilisateurActuel.tempsEtudeTotale || 0;
     document.getElementById('last-login').textContent = utilisateurActuel.derniereConnexion;
 
     const etudesInput = document.getElementById('profile-etudes');
     if (etudesInput) etudesInput.value = utilisateurActuel.etudes || '';
 
     const userPhoto = document.getElementById('user-photo');
-    if (userPhoto) userPhoto.src = utilisateurActuel.photo || 'default.png';
+    if (userPhoto) userPhoto.src = utilisateurActuel.photo || DATA_URI_PLACEHOLDER;
+    // Also update the small top-bar avatar
+    const topPhoto = document.getElementById('top-user-photo');
+    if (topPhoto) topPhoto.src = utilisateurActuel.photo || DATA_URI_PLACEHOLDER;
 }
 
 function exporterDonneesUtilisateur() {
@@ -1252,7 +1724,15 @@ function importerDonneesUtilisateur(event) {
             
             Object.assign(utilisateurActuel, donneesUtilisateur);
             utilisateurs.set(utilisateurActuel.nomUtilisateur, utilisateurActuel);
-            
+            // Update or insert into global leaderboard list
+            let globalEntry = utilisateursGlobaux.find(u => u.nomUtilisateur === utilisateurActuel.nomUtilisateur);
+            if (!globalEntry) {
+                utilisateursGlobaux.push({ nomUtilisateur: utilisateurActuel.nomUtilisateur, points: utilisateurActuel.pointsTotaux || 0, ligue: obtenirLigueUtilisateur(utilisateurActuel.pointsTotaux || 0), etudes: utilisateurActuel.etudes || '', tempsEtudeTotale: utilisateurActuel.tempsEtudeTotale || 0, tempsPrevu: utilisateurActuel.tempsPrevu || 0 });
+            } else {
+                globalEntry.points = utilisateurActuel.pointsTotaux || 0;
+                globalEntry.tempsEtudeTotale = utilisateurActuel.tempsEtudeTotale || 0;
+                globalEntry.tempsPrevu = utilisateurActuel.tempsPrevu || 0;
+            }
             mettreAJourInterfaceUtilisateur();
             afficherNotification('Données importées avec succès!', 'success');
         } catch (erreur) {
@@ -1412,9 +1892,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (e.key === 'Enter') {
                     if (utilisateurActuel) {
                         utilisateurActuel.etudes = this.value.trim();
+                        // sync to global leaderboard
+                        let globalEntry = utilisateursGlobaux.find(u => u.nomUtilisateur === utilisateurActuel.nomUtilisateur);
+                        if (globalEntry) globalEntry.etudes = utilisateurActuel.etudes;
                         mettreAJourInterfaceProfil();
+                        mettreAJourInterfaceUtilisateur();
                         afficherNotification('Etudes mises à jour !', 'success');
                     }
+                }
+            });
+            // Update on blur as well
+            etudesInput.addEventListener('blur', function() {
+                if (utilisateurActuel) {
+                    utilisateurActuel.etudes = this.value.trim();
+                    let globalEntry = utilisateursGlobaux.find(u => u.nomUtilisateur === utilisateurActuel.nomUtilisateur);
+                    if (globalEntry) globalEntry.etudes = utilisateurActuel.etudes;
+                    mettreAJourInterfaceProfil();
+                    mettreAJourInterfaceUtilisateur();
                 }
             });
         }
@@ -1427,11 +1921,45 @@ document.addEventListener('DOMContentLoaded', function() {
                     const reader = new FileReader();
                     reader.onload = function(ev) {
                         const userPhoto = document.getElementById('user-photo');
+                        const topPhoto = document.getElementById('top-user-photo');
                         if (userPhoto) userPhoto.src = ev.target.result;
-                        if (utilisateurActuel) utilisateurActuel.photo = ev.target.result;
+                        if (topPhoto) topPhoto.src = ev.target.result;
+                        if (utilisateurActuel) {
+                            utilisateurActuel.photo = ev.target.result;
+                            // sync to global entry
+                            const globalEntry = utilisateursGlobaux.find(u => u.nomUtilisateur === utilisateurActuel.nomUtilisateur);
+                            if (globalEntry) globalEntry.photo = ev.target.result;
+                            // Update the top bar photo
+                            mettreAJourTopBar();
+                        }
                     };
                     reader.readAsDataURL(file);
                 }
+            });
+        }
+
+        const changePhotoBtn = document.getElementById('change-photo-btn');
+        if (changePhotoBtn && photoInput) {
+            changePhotoBtn.addEventListener('click', function() {
+                photoInput.click();
+            });
+        }
+        // Ensure timer controls have handlers (re-bind as a safety net)
+        const btnStart = document.getElementById('start-btn');
+        const btnPause = document.getElementById('pause-btn');
+        const btnStop = document.getElementById('stop-btn');
+        const btnSkip = document.getElementById('skip-btn');
+        if (btnStart) btnStart.addEventListener('click', demarrerMinuteur);
+        if (btnPause) btnPause.addEventListener('click', pauserMinuteur);
+        if (btnStop) btnStop.addEventListener('click', arreterMinuteur);
+        if (btnSkip) btnSkip.addEventListener('click', passerMinuteur);
+        // Retour à moi button
+        const statsBackBtn = document.getElementById('stats-back-to-me');
+        if (statsBackBtn) {
+            statsBackBtn.addEventListener('click', () => {
+                utilisateurAffiche = utilisateurActuel;
+                afficherStatsUtilisateur(utilisateurAffiche);
+                rendreStatistiquesAvancees();
             });
         }
     }, 1000);
